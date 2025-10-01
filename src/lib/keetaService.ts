@@ -1,10 +1,18 @@
 import * as KeetaNet from '@keetanetwork/keetanet-client';
 
 // Initialize a client to fetch network-level data
-const createTestClient = () => {
+const getTestClient = () => {
   const seed = KeetaNet.lib.Account.generateRandomSeed({ asString: true });
   const account = KeetaNet.lib.Account.fromSeed(seed, 0);
   return KeetaNet.UserClient.fromNetwork('test', account);
+};
+
+let clientInstance: any = null;
+const getClient = () => {
+  if (!clientInstance) {
+    clientInstance = getTestClient();
+  }
+  return clientInstance;
 };
 
 export interface Representative {
@@ -48,45 +56,22 @@ export const keetaService = {
     }
   },
 
-  // Get recent blocks from active representatives
+  // Get recent blocks using Keeta client
   async getRecentBlocks() {
     try {
-      const representatives = await this.getRepresentatives();
-      console.log('📊 Representatives:', representatives);
+      const client = getClient();
       
-      const activeReps = representatives.filter(rep => rep.weight !== "0x0").slice(0, 3);
-      console.log('✅ Active Representatives:', activeReps);
+      // Get recent vote staples from the last hour
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const voteStaples = await client.ledger.getVoteStaplesAfter(oneHourAgo, 50);
       
-      const allHistory: VoteStaple[] = [];
-      
-      // Fetch history data from multiple representatives (same as transactions)
-      for (const rep of activeReps) {
-        try {
-          const url = `${rep.endpoints.api}/node/ledger/account/${rep.representative}/history?limit=50`;
-          console.log('🔍 Fetching blocks from history:', url);
-          
-          const response = await fetch(url);
-          const data = await response.json();
-          console.log('📜 Blocks history response:', data);
-          
-          if (data.history && data.history.length > 0) {
-            console.log('✅ Found history items for blocks:', data.history.length);
-            allHistory.push(...data.history);
-          } else {
-            console.log('⚠️ No history in response');
-          }
-        } catch (err) {
-          console.error('❌ Error fetching history from rep:', err);
-        }
-      }
-      
-      console.log('📊 Total history items for blocks:', allHistory.length);
+      console.log('📊 Vote staples fetched:', voteStaples.length);
       
       // Extract blocks from vote staples
       const allBlocks: Block[] = [];
-      allHistory.forEach(item => {
-        if (item.voteStaple?.blocks) {
-          allBlocks.push(...item.voteStaple.blocks);
+      voteStaples.forEach(staple => {
+        if (staple.blocks) {
+          allBlocks.push(...staple.blocks);
         }
       });
       
@@ -105,46 +90,26 @@ export const keetaService = {
     }
   },
 
-  // Get recent transactions from active representatives
+  // Get recent transactions using Keeta client
   async getRecentTransactions() {
     try {
-      const representatives = await this.getRepresentatives();
-      const activeReps = representatives.filter(rep => rep.weight !== "0x0").slice(0, 3);
+      const client = getClient();
       
-      const allHistory: VoteStaple[] = [];
+      // Get recent vote staples from the last hour
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const voteStaples = await client.ledger.getVoteStaplesAfter(oneHourAgo, 50);
       
-      // Fetch history data from multiple representatives
-      for (const rep of activeReps) {
-        try {
-          const url = `${rep.endpoints.api}/node/ledger/account/${rep.representative}/history?limit=50`;
-          console.log('🔍 Fetching history from:', url);
-          
-          const response = await fetch(url);
-          const data = await response.json();
-          console.log('📜 History response:', data);
-          
-          if (data.history && data.history.length > 0) {
-            console.log('✅ Found history items:', data.history.length);
-            allHistory.push(...data.history);
-          } else {
-            console.log('⚠️ No history in response');
-          }
-        } catch (err) {
-          console.error('❌ Error fetching history from rep:', err);
-        }
-      }
+      console.log('📊 Vote staples for transactions:', voteStaples.length);
       
-      console.log('📊 Total history items:', allHistory.length);
-      
-      // Extract blocks from vote staples and sort
+      // Extract blocks from vote staples
       const allBlocks: Block[] = [];
-      allHistory.forEach(item => {
-        if (item.voteStaple?.blocks) {
-          allBlocks.push(...item.voteStaple.blocks);
+      voteStaples.forEach(staple => {
+        if (staple.blocks) {
+          allBlocks.push(...staple.blocks);
         }
       });
       
-      console.log('📊 Blocks extracted from history:', allBlocks.length);
+      console.log('📊 Transaction blocks extracted:', allBlocks.length);
       
       const sorted = allBlocks
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -186,30 +151,25 @@ export const keetaService = {
     }
   },
 
-  // Get account info with full transaction history
+  // Get account info using Keeta client
   async getAccountInfo(address: string) {
     try {
-      const representatives = await this.getRepresentatives();
-      const rep = representatives.find(r => r.weight !== "0x0") || representatives[0];
+      const client = getClient();
       
       console.log('🔍 Fetching account info for:', address);
       
-      const response = await fetch(
-        `${rep.endpoints.api}/node/ledger/account/${address}/history?limit=100`
-      );
-      const data = await response.json();
+      // Get account history
+      const history = await client.ledger.getHistory(address, null, 100);
       
-      console.log('📊 Account history response:', data);
+      console.log('📊 Account history fetched:', history.length);
       
       // Extract all blocks from history
       const allBlocks: Block[] = [];
-      if (data.history) {
-        data.history.forEach((item: VoteStaple) => {
-          if (item.voteStaple?.blocks) {
-            allBlocks.push(...item.voteStaple.blocks);
-          }
-        });
-      }
+      history.forEach((staple) => {
+        if (staple.blocks) {
+          allBlocks.push(...staple.blocks);
+        }
+      });
       
       // Filter transactions involving this address
       const addressTransactions = allBlocks.filter(block => 
