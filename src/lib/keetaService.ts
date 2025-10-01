@@ -27,8 +27,10 @@ export interface Block {
 }
 
 export interface VoteStaple {
-  blocks: Block[];
-  votes: any[];
+  voteStaple: {
+    blocks: Block[];
+    votes: any[];
+  };
 }
 
 export const keetaService = {
@@ -80,9 +82,9 @@ export const keetaService = {
       
       // Extract blocks from vote staples
       const allBlocks: Block[] = [];
-      allHistory.forEach(staple => {
-        if (staple.blocks) {
-          allBlocks.push(...staple.blocks);
+      allHistory.forEach(item => {
+        if (item.voteStaple?.blocks) {
+          allBlocks.push(...item.voteStaple.blocks);
         }
       });
       
@@ -134,9 +136,9 @@ export const keetaService = {
       
       // Extract blocks from vote staples and sort
       const allBlocks: Block[] = [];
-      allHistory.forEach(staple => {
-        if (staple.blocks) {
-          allBlocks.push(...staple.blocks);
+      allHistory.forEach(item => {
+        if (item.voteStaple?.blocks) {
+          allBlocks.push(...item.voteStaple.blocks);
         }
       });
       
