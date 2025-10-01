@@ -2,13 +2,9 @@ import Header from "@/components/Header";
 import StatsCard from "@/components/StatsCard";
 import LatestBlocks from "@/components/LatestBlocks";
 import LatestTransactions from "@/components/LatestTransactions";
-import RepresentativesList from "@/components/RepresentativesList";
-import DebugPanel from "@/components/DebugPanel";
 import { Box, ArrowRightLeft, Users, Activity } from "lucide-react";
-import { useNetworkStats } from "@/hooks/useKeetaData";
 
 const Home = () => {
-  const { data: networkStats, isLoading } = useNetworkStats();
 
   return (
     <div className="min-h-screen bg-background">
