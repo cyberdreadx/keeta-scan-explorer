@@ -48,31 +48,45 @@ export const keetaService = {
   async getRecentBlocks() {
     try {
       const representatives = await this.getRepresentatives();
+      console.log('📊 Representatives:', representatives);
+      
       const activeReps = representatives.filter(rep => rep.weight !== "0x0").slice(0, 3);
+      console.log('✅ Active Representatives:', activeReps);
       
       const allBlocks: Block[] = [];
       
       // Fetch chain data from multiple representatives
       for (const rep of activeReps) {
         try {
-          const response = await fetch(
-            `${rep.endpoints.api}/node/ledger/account/${rep.representative}/chain?start=HEAD&limit=50`
-          );
+          const url = `${rep.endpoints.api}/node/ledger/account/${rep.representative}/chain?start=HEAD&limit=50`;
+          console.log('🔍 Fetching blocks from:', url);
+          
+          const response = await fetch(url);
           const data = await response.json();
+          console.log('📦 Block response:', data);
+          
           if (data.blocks && data.blocks.length > 0) {
+            console.log('✅ Found blocks:', data.blocks.length);
             allBlocks.push(...data.blocks);
+          } else {
+            console.log('⚠️ No blocks in response');
           }
         } catch (err) {
-          console.error('Error fetching blocks from rep:', err);
+          console.error('❌ Error fetching blocks from rep:', err);
         }
       }
       
+      console.log('📊 Total blocks collected:', allBlocks.length);
+      
       // Sort by date (most recent first)
-      return allBlocks
+      const sorted = allBlocks
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 10);
+      
+      console.log('📋 Final blocks to display:', sorted);
+      return sorted;
     } catch (error) {
-      console.error('Error fetching recent blocks:', error);
+      console.error('❌ Error fetching recent blocks:', error);
       return [];
     }
   },
@@ -88,17 +102,25 @@ export const keetaService = {
       // Fetch history data from multiple representatives
       for (const rep of activeReps) {
         try {
-          const response = await fetch(
-            `${rep.endpoints.api}/node/ledger/account/${rep.representative}/history?limit=50`
-          );
+          const url = `${rep.endpoints.api}/node/ledger/account/${rep.representative}/history?limit=50`;
+          console.log('🔍 Fetching history from:', url);
+          
+          const response = await fetch(url);
           const data = await response.json();
+          console.log('📜 History response:', data);
+          
           if (data.history && data.history.length > 0) {
+            console.log('✅ Found history items:', data.history.length);
             allHistory.push(...data.history);
+          } else {
+            console.log('⚠️ No history in response');
           }
         } catch (err) {
-          console.error('Error fetching history from rep:', err);
+          console.error('❌ Error fetching history from rep:', err);
         }
       }
+      
+      console.log('📊 Total history items:', allHistory.length);
       
       // Extract blocks from vote staples and sort
       const allBlocks: Block[] = [];
@@ -108,11 +130,16 @@ export const keetaService = {
         }
       });
       
-      return allBlocks
+      console.log('📊 Blocks extracted from history:', allBlocks.length);
+      
+      const sorted = allBlocks
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 10);
+      
+      console.log('📋 Final transactions to display:', sorted);
+      return sorted;
     } catch (error) {
-      console.error('Error fetching recent transactions:', error);
+      console.error('❌ Error fetching recent transactions:', error);
       return [];
     }
   },

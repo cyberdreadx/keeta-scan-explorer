@@ -3,6 +3,7 @@ import StatsCard from "@/components/StatsCard";
 import LatestBlocks from "@/components/LatestBlocks";
 import LatestTransactions from "@/components/LatestTransactions";
 import RepresentativesList from "@/components/RepresentativesList";
+import DebugPanel from "@/components/DebugPanel";
 import { Box, ArrowRightLeft, Users, Activity } from "lucide-react";
 import { useNetworkStats } from "@/hooks/useKeetaData";
 
@@ -69,6 +70,9 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      {/* Debug Panel */}
+      <DebugPanel />
     </div>
   );
 };
