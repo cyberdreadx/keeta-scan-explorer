@@ -48,64 +48,53 @@ export const keetaService = {
     }
   },
 
-  // Get recent blocks from the network (prioritize fresh votes, fallback to rep history)
+  // Get recent blocks from the network (prioritize fresh votes via a CORS-friendly rep, fallback to history)
   async getRecentBlocks() {
     try {
-      const representatives = await this.getRepresentatives();
-      const activeReps = representatives.filter(rep => rep.weight !== "0x0").slice(0, 4);
+      const reps = await this.getRepresentatives();
+      const primary = reps.find(r => r.endpoints.api.includes('rep1.test.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
+      if (!primary) return [];
 
-      // 1) Try freshest data via votes/after across multiple lookback windows
       let allBlocks: Block[] = [];
-      const lookbacksMin = [5, 60, 1440]; // 5 min, 1 hour, 24 hours
+      const lookbacksMin = [5, 60, 1440];
 
+      // Try votes/after on primary rep only (avoid CORS errors from others)
       for (const minutes of lookbacksMin) {
-        const sinceISO = new Date(Date.now() - minutes * 60 * 1000).toISOString();
-        const perRep = await Promise.all(
-          activeReps.map(async (rep) => {
-            try {
-              const url = `${rep.endpoints.api}/node/ledger/votes/after?moment=${encodeURIComponent(sinceISO)}&limit=200`;
-              const res = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
-              const data = await res.json();
-              const staples: any[] = Array.isArray(data) ? data : (data.voteStaples || data.history || []);
-
-              const blocks: Block[] = [];
-              staples.forEach((item: any) => {
-                const staple = item?.voteStaple || item;
-                if (staple?.blocks) blocks.push(...staple.blocks);
-              });
-              console.log(`✅ votes/after from ${rep.endpoints.api} (${minutes}m):`, blocks.length);
-              return blocks;
-            } catch (err) {
-              console.error('❌ votes/after failed for rep', rep.endpoints.api, err);
-              return [] as Block[];
-            }
-          })
-        );
-        allBlocks = perRep.flat();
-        if (allBlocks.length > 0) break; // stop if we got data
-      }
-
-      // 2) Fallback to rep account history if votes/after returned nothing
-      if (allBlocks.length === 0) {
-        const allHistory: VoteStaple[] = [];
-        for (const rep of activeReps) {
-          try {
-            const url = `${rep.endpoints.api}/node/ledger/account/${rep.representative}/history?limit=100`;
-            const response = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
-            const data = await response.json();
-            if (data.history && data.history.length > 0) {
-              allHistory.push(...data.history);
-            }
-          } catch (err) {
-            console.error('❌ Error fetching history from rep:', err);
+        try {
+          const sinceISO = new Date(Date.now() - minutes * 60 * 1000).toISOString();
+          const url = `${primary.endpoints.api}/node/ledger/votes/after?moment=${encodeURIComponent(sinceISO)}&limit=200`;
+          const res = await fetch(url, { headers: { Accept: 'application/json' } });
+          if (res.ok) {
+            const data = await res.json();
+            const staples: any[] = Array.isArray(data) ? data : (data.voteStaples || data.history || []);
+            staples.forEach((item: any) => {
+              const staple = item?.voteStaple || item;
+              if (staple?.blocks) allBlocks.push(...staple.blocks);
+            });
           }
+          if (allBlocks.length > 0) break;
+        } catch (_) {
+          // swallow
         }
-        allHistory.forEach((item: any) => {
-          if (item?.voteStaple?.blocks) allBlocks.push(...item.voteStaple.blocks);
-        });
       }
 
-      // Dedupe by block hash
+      // Fallback: primary rep's account history
+      if (allBlocks.length === 0) {
+        try {
+          const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
+          const res = await fetch(url, { headers: { Accept: 'application/json' } });
+          if (res.ok) {
+            const data = await res.json();
+            (data.history || []).forEach((item: any) => {
+              if (item?.voteStaple?.blocks) allBlocks.push(...item.voteStaple.blocks);
+            });
+          }
+        } catch (_) {
+          // swallow
+        }
+      }
+
+      // Dedupe and sort
       const seen = new Set<string>();
       const getHash = (b: any) => b?.hash || b?.$hash || b?.blockHash || '';
       const deduped = allBlocks.filter((b) => {
@@ -117,7 +106,7 @@ export const keetaService = {
 
       const sorted = deduped
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 10);
+        .slice(0, 20);
 
       console.log('📋 Final blocks to display:', sorted);
       return sorted;
@@ -127,59 +116,48 @@ export const keetaService = {
     }
   },
 
-  // Get recent transactions (same source as blocks: votes/after with fallback)
+  // Get recent transactions (same source as blocks: votes/after with fallback, CORS-friendly)
   async getRecentTransactions() {
     try {
-      const representatives = await this.getRepresentatives();
-      const activeReps = representatives.filter(rep => rep.weight !== "0x0").slice(0, 4);
+      const reps = await this.getRepresentatives();
+      const primary = reps.find(r => r.endpoints.api.includes('rep1.test.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
+      if (!primary) return [];
 
       let allBlocks: Block[] = [];
       const lookbacksMin = [5, 60, 1440];
 
       for (const minutes of lookbacksMin) {
-        const sinceISO = new Date(Date.now() - minutes * 60 * 1000).toISOString();
-        const perRep = await Promise.all(
-          activeReps.map(async (rep) => {
-            try {
-              const url = `${rep.endpoints.api}/node/ledger/votes/after?moment=${encodeURIComponent(sinceISO)}&limit=200`;
-              const res = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
-              const data = await res.json();
-              const staples: any[] = Array.isArray(data) ? data : (data.voteStaples || data.history || []);
-
-              const blocks: Block[] = [];
-              staples.forEach((item: any) => {
-                const staple = item?.voteStaple || item;
-                if (staple?.blocks) blocks.push(...staple.blocks);
-              });
-              console.log(`✅ votes/after (tx) from ${rep.endpoints.api} (${minutes}m):`, blocks.length);
-              return blocks;
-            } catch (err) {
-              console.error('❌ votes/after (tx) failed for rep', rep.endpoints.api, err);
-              return [] as Block[];
-            }
-          })
-        );
-        allBlocks = perRep.flat();
-        if (allBlocks.length > 0) break;
+        try {
+          const sinceISO = new Date(Date.now() - minutes * 60 * 1000).toISOString();
+          const url = `${primary.endpoints.api}/node/ledger/votes/after?moment=${encodeURIComponent(sinceISO)}&limit=200`;
+          const res = await fetch(url, { headers: { Accept: 'application/json' } });
+          if (res.ok) {
+            const data = await res.json();
+            const staples: any[] = Array.isArray(data) ? data : (data.voteStaples || data.history || []);
+            staples.forEach((item: any) => {
+              const staple = item?.voteStaple || item;
+              if (staple?.blocks) allBlocks.push(...staple.blocks);
+            });
+          }
+          if (allBlocks.length > 0) break;
+        } catch (_) {
+          // swallow
+        }
       }
 
       if (allBlocks.length === 0) {
-        const allHistory: VoteStaple[] = [];
-        for (const rep of activeReps) {
-          try {
-            const url = `${rep.endpoints.api}/node/ledger/account/${rep.representative}/history?limit=100`;
-            const response = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
-            const data = await response.json();
-            if (data.history && data.history.length > 0) {
-              allHistory.push(...data.history);
-            }
-          } catch (err) {
-            console.error('❌ Error fetching history from rep:', err);
+        try {
+          const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
+          const res = await fetch(url, { headers: { Accept: 'application/json' } });
+          if (res.ok) {
+            const data = await res.json();
+            (data.history || []).forEach((item: any) => {
+              if (item?.voteStaple?.blocks) allBlocks.push(...item.voteStaple.blocks);
+            });
           }
+        } catch (_) {
+          // swallow
         }
-        allHistory.forEach((item: any) => {
-          if (item?.voteStaple?.blocks) allBlocks.push(...item.voteStaple.blocks);
-        });
       }
 
       const seen = new Set<string>();
@@ -193,7 +171,7 @@ export const keetaService = {
 
       const sorted = deduped
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 10);
+        .slice(0, 20);
 
       console.log('📋 Final transactions to display:', sorted);
       return sorted;
