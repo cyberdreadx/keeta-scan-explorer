@@ -53,30 +53,40 @@ export const keetaService = {
       const activeReps = representatives.filter(rep => rep.weight !== "0x0").slice(0, 3);
       console.log('✅ Active Representatives:', activeReps);
       
-      const allBlocks: Block[] = [];
+      const allHistory: VoteStaple[] = [];
       
-      // Fetch chain data from multiple representatives
+      // Fetch history data from multiple representatives (same as transactions)
       for (const rep of activeReps) {
         try {
-          const url = `${rep.endpoints.api}/node/ledger/account/${rep.representative}/chain?start=HEAD&limit=50`;
-          console.log('🔍 Fetching blocks from:', url);
+          const url = `${rep.endpoints.api}/node/ledger/account/${rep.representative}/history?limit=50`;
+          console.log('🔍 Fetching blocks from history:', url);
           
           const response = await fetch(url);
           const data = await response.json();
-          console.log('📦 Block response:', data);
+          console.log('📜 Blocks history response:', data);
           
-          if (data.blocks && data.blocks.length > 0) {
-            console.log('✅ Found blocks:', data.blocks.length);
-            allBlocks.push(...data.blocks);
+          if (data.history && data.history.length > 0) {
+            console.log('✅ Found history items for blocks:', data.history.length);
+            allHistory.push(...data.history);
           } else {
-            console.log('⚠️ No blocks in response');
+            console.log('⚠️ No history in response');
           }
         } catch (err) {
-          console.error('❌ Error fetching blocks from rep:', err);
+          console.error('❌ Error fetching history from rep:', err);
         }
       }
       
-      console.log('📊 Total blocks collected:', allBlocks.length);
+      console.log('📊 Total history items for blocks:', allHistory.length);
+      
+      // Extract blocks from vote staples
+      const allBlocks: Block[] = [];
+      allHistory.forEach(staple => {
+        if (staple.blocks) {
+          allBlocks.push(...staple.blocks);
+        }
+      });
+      
+      console.log('📊 Blocks extracted:', allBlocks.length);
       
       // Sort by date (most recent first)
       const sorted = allBlocks
