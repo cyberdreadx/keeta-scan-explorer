@@ -3,8 +3,11 @@ import StatsCard from "@/components/StatsCard";
 import LatestBlocks from "@/components/LatestBlocks";
 import LatestTransactions from "@/components/LatestTransactions";
 import { Box, ArrowRightLeft, Users, Activity } from "lucide-react";
+import { useNetworkStats } from "@/hooks/useKeetaData";
 
 const Home = () => {
+  const { data: networkStats, isLoading } = useNetworkStats();
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -28,26 +31,26 @@ const Home = () => {
       <div className="container mx-auto px-4 -mt-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
-            title="Latest Block"
-            value="1,234,567"
+            title="Total Blocks"
+            value={isLoading ? "..." : networkStats?.totalBlocks?.toString() || "0"}
             icon={Box}
-            change="+12 blocks/min"
+            change="From test account"
           />
           <StatsCard
             title="Transactions"
-            value="8,456,789"
+            value={isLoading ? "..." : networkStats?.totalTransactions?.toString() || "0"}
             icon={ArrowRightLeft}
-            change="+245 TPS"
+            change="Real-time data"
           />
           <StatsCard
-            title="Active Addresses"
-            value="456,789"
+            title="Network"
+            value="Keeta Test"
             icon={Users}
-            change="+1.2k today"
+            change="Connected"
           />
           <StatsCard
-            title="Network Activity"
-            value="98.5%"
+            title="Status"
+            value={isLoading ? "Loading..." : "Live"}
             icon={Activity}
           />
         </div>
