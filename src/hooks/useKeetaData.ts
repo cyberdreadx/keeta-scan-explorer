@@ -9,6 +9,22 @@ export const useNetworkStats = () => {
   });
 };
 
+export const useRecentBlocks = () => {
+  return useQuery({
+    queryKey: ['recent-blocks'],
+    queryFn: () => keetaService.getRecentBlocks(),
+    refetchInterval: 30000,
+  });
+};
+
+export const useRecentTransactions = () => {
+  return useQuery({
+    queryKey: ['recent-transactions'],
+    queryFn: () => keetaService.getRecentTransactions(),
+    refetchInterval: 30000,
+  });
+};
+
 export const useAccountInfo = (address: string | undefined) => {
   return useQuery({
     queryKey: ['account-info', address],

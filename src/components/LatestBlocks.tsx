@@ -2,24 +2,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Box, Clock } from "lucide-react";
-
-interface Block {
-  number: number;
-  timestamp: string;
-  transactions: number;
-  miner: string;
-  reward: string;
-}
-
-const mockBlocks: Block[] = Array.from({ length: 10 }, (_, i) => ({
-  number: 1234567 - i,
-  timestamp: `${Math.floor(Math.random() * 60)} secs ago`,
-  transactions: Math.floor(Math.random() * 200) + 50,
-  miner: `0x${Math.random().toString(16).substring(2, 10)}...${Math.random().toString(16).substring(2, 6)}`,
-  reward: (Math.random() * 2 + 1).toFixed(4),
-}));
+import { useRecentBlocks } from "@/hooks/useKeetaData";
+import { formatDistanceToNow } from "date-fns";
 
 const LatestBlocks = () => {
+  const { data: blocks, isLoading } = useRecentBlocks();
+
+  const formatTimestamp = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch {
+      return "Unknown";
+    }
+  };
+
+  const shortenHash = (hash: string) => {
+    if (!hash) return "N/A";
+    return `${hash.substring(0, 10)}...${hash.substring(hash.length - 6)}`;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -29,48 +30,55 @@ const LatestBlocks = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {mockBlocks.map((block) => (
-            <div
-              key={block.number}
-              className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/5 transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Box className="h-5 w-5 text-primary" />
+        {isLoading ? (
+          <div className="text-center py-8 text-muted-foreground">
+            Loading blocks...
+          </div>
+        ) : blocks && blocks.length > 0 ? (
+          <div className="space-y-3">
+            {blocks.map((block) => (
+              <div
+                key={block.hash}
+                className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/5 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Box className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <Link
+                      to={`/block/${block.hash}`}
+                      className="font-mono text-sm text-primary hover:text-primary-glow transition-colors"
+                    >
+                      {shortenHash(block.hash)}
+                    </Link>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                      <Clock className="h-3 w-3" />
+                      {formatTimestamp(block.date)}
+                    </div>
+                  </div>
                 </div>
-                <div>
+                <div className="text-right">
                   <Link
-                    to={`/block/${block.number}`}
-                    className="font-semibold text-primary hover:text-primary-glow transition-colors"
+                    to={`/address/${block.account}`}
+                    className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono"
                   >
-                    {block.number}
+                    {shortenHash(block.account)}
                   </Link>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                    <Clock className="h-3 w-3" />
-                    {block.timestamp}
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="secondary" className="text-xs">
+                      {block.operations?.length || 0} ops
+                    </Badge>
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <Link
-                  to={`/address/${block.miner}`}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {block.miner}
-                </Link>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="secondary" className="text-xs">
-                    {block.transactions} txns
-                  </Badge>
-                  <span className="text-xs font-medium text-success">
-                    {block.reward} KTA
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            No blocks found. The network may not have recent activity.
+          </div>
+        )}
       </CardContent>
     </Card>
   );
