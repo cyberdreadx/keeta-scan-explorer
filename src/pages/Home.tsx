@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import StatsCard from "@/components/StatsCard";
 import LatestBlocks from "@/components/LatestBlocks";
 import LatestTransactions from "@/components/LatestTransactions";
+import RepresentativesList from "@/components/RepresentativesList";
 import { Box, ArrowRightLeft, Users, Activity } from "lucide-react";
 import { useNetworkStats } from "@/hooks/useKeetaData";
 
@@ -31,34 +32,41 @@ const Home = () => {
       <div className="container mx-auto px-4 -mt-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
-            title="Total Blocks"
-            value={isLoading ? "..." : networkStats?.totalBlocks?.toString() || "0"}
+            title="Representatives"
+            value={isLoading ? "..." : networkStats?.totalRepresentatives?.toString() || "0"}
             icon={Box}
-            change="From test account"
+            change="Network validators"
           />
           <StatsCard
-            title="Transactions"
-            value={isLoading ? "..." : networkStats?.totalTransactions?.toString() || "0"}
-            icon={ArrowRightLeft}
-            change="Real-time data"
+            title="Active Validators"
+            value={isLoading ? "..." : networkStats?.activeRepresentatives?.toString() || "0"}
+            icon={Activity}
+            change="With voting weight"
           />
           <StatsCard
             title="Network"
             value="Keeta Test"
-            icon={Users}
+            icon={ArrowRightLeft}
             change="Connected"
           />
           <StatsCard
             title="Status"
             value={isLoading ? "Loading..." : "Live"}
-            icon={Activity}
+            icon={Users}
           />
         </div>
 
         {/* Latest Data */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12">
-          <LatestBlocks />
-          <LatestTransactions />
+          <div className="space-y-6">
+            <LatestBlocks />
+          </div>
+          <div className="space-y-6">
+            <LatestTransactions />
+            {!isLoading && networkStats?.representatives && (
+              <RepresentativesList representatives={networkStats.representatives} />
+            )}
+          </div>
         </div>
       </div>
     </div>

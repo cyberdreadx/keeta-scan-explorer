@@ -7,27 +7,52 @@ const createTestClient = () => {
   return KeetaNet.UserClient.fromNetwork('test', account);
 };
 
+export interface Representative {
+  representative: string;
+  weight: string;
+  endpoints: {
+    p2p: string;
+    api: string;
+  };
+}
+
 export const keetaService = {
-  // Get network statistics from a test account
+  // Get network representatives (validators)
+  async getRepresentatives(): Promise<Representative[]> {
+    try {
+      const response = await fetch('https://rep1.test.network.api.keeta.com/api/node/ledger/representatives');
+      const data = await response.json();
+      return data.representatives || [];
+    } catch (error) {
+      console.error('Error fetching representatives:', error);
+      return [];
+    }
+  },
+
+  // Get network statistics
   async getNetworkStats() {
     try {
-      const client = createTestClient();
-      const chain = await client.chain();
-      const history = await client.history();
+      const representatives = await this.getRepresentatives();
+      const activeReps = representatives.filter(rep => rep.weight !== "0x0");
+      
+      // Calculate total weight
+      const totalWeight = representatives.reduce((sum, rep) => {
+        return sum + BigInt(rep.weight);
+      }, BigInt(0));
       
       return {
-        latestBlock: chain.length > 0 ? chain[chain.length - 1] : null,
-        totalBlocks: chain.length,
-        totalTransactions: history.length,
-        client, // Return client for further queries
+        totalRepresentatives: representatives.length,
+        activeRepresentatives: activeReps.length,
+        totalWeight: totalWeight.toString(16),
+        representatives,
       };
     } catch (error) {
       console.error('Error fetching network stats:', error);
       return {
-        latestBlock: null,
-        totalBlocks: 0,
-        totalTransactions: 0,
-        client: null,
+        totalRepresentatives: 0,
+        activeRepresentatives: 0,
+        totalWeight: "0",
+        representatives: [],
       };
     }
   },
