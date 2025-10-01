@@ -49,122 +49,15 @@ const BlockDetail = () => {
             <CardHeader>
               <CardTitle>Overview</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Block Height</p>
-                  <p className="font-mono font-semibold">{block.number}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Timestamp</p>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm">{new Date(block.timestamp).toLocaleString()}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Transactions</p>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">{block.transactions} transactions</Badge>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Block Reward</p>
-                  <p className="font-semibold text-success">{block.reward}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm text-muted-foreground mb-1">Hash</p>
-                  <p className="font-mono text-sm break-all">{block.hash}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm text-muted-foreground mb-1">Parent Hash</p>
-                  <p className="font-mono text-sm break-all">{block.parentHash}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm text-muted-foreground mb-1">Miner</p>
-                  <Link
-                    to={`/address/${block.miner}`}
-                    className="font-mono text-sm text-primary hover:text-primary-glow transition-colors break-all"
-                  >
-                    {block.miner}
-                  </Link>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Gas Used</p>
-                  <p className="text-sm">{block.gasUsed}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Gas Limit</p>
-                  <p className="text-sm">{block.gasLimit}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Difficulty</p>
-                  <p className="text-sm">{block.difficulty}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Size</p>
-                  <p className="text-sm">{block.size}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ArrowRightLeft className="h-5 w-5 text-accent" />
-                Transactions ({transactions.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {transactions.map((tx) => (
-                  <div
-                    key={tx.hash}
-                    className="p-4 rounded-lg border border-border hover:bg-accent/5 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-4 mb-3">
-                      <div className="flex-1">
-                        <p className="text-xs text-muted-foreground mb-1">Transaction Hash</p>
-                        <Link
-                          to={`/tx/${tx.hash}`}
-                          className="font-mono text-sm text-primary hover:text-primary-glow transition-colors break-all"
-                        >
-                          {tx.hash}
-                        </Link>
-                      </div>
-                      <Badge variant="default" className="text-xs">
-                        {tx.status}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">From</p>
-                        <Link
-                          to={`/address/${tx.from}`}
-                          className="font-mono text-primary hover:text-primary-glow transition-colors break-all"
-                        >
-                          {tx.from}
-                        </Link>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">To</p>
-                        <Link
-                          to={`/address/${tx.to}`}
-                          className="font-mono text-primary hover:text-primary-glow transition-colors break-all"
-                        >
-                          {tx.to}
-                        </Link>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Value</p>
-                        <p className="font-semibold">{tx.value}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
+          <CardContent>
+            <div className="text-center py-12">
+              <Box className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+              <p className="text-lg font-semibold text-foreground mb-2">Coming Soon</p>
+              <p className="text-sm text-muted-foreground">
+                Block details will be displayed here once connected to the network.
+              </p>
+            </div>
+          </CardContent>
           </Card>
         </div>
       </div>

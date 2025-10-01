@@ -32,55 +32,13 @@ const LatestBlocks = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">
-            Loading blocks...
-          </div>
-        ) : blocks && blocks.length > 0 ? (
-          <div className="space-y-3">
-            {blocks.map((block) => (
-              <div
-                key={getBlockHash(block) || `${block.account}-${block.date}`}
-                className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/5 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Box className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <Link
-                      to={`/block/${getBlockHash(block)}`}
-                      className="font-mono text-sm text-primary hover:text-primary-glow transition-colors"
-                    >
-                      {shortenHash(getBlockHash(block))}
-                    </Link>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                      <Clock className="h-3 w-3" />
-                      {formatTimestamp(block.date)}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <Link
-                    to={`/address/${block.account}`}
-                    className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono"
-                  >
-                    {shortenHash(block.account)}
-                  </Link>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="secondary" className="text-xs">
-                      {block.operations?.length || 0} ops
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            No blocks found. The network may not have recent activity.
-          </div>
-        )}
+        <div className="text-center py-12">
+          <Box className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+          <p className="text-lg font-semibold text-foreground mb-2">Coming Soon</p>
+          <p className="text-sm text-muted-foreground">
+            Latest blocks will be displayed here once connected to the network.
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

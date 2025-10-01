@@ -50,87 +50,18 @@ const TransactionDetail = () => {
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Transaction Hash</p>
-                <p className="font-mono text-sm break-all">{transaction.hash}</p>
-              </div>
+          <CardContent>
+            <div className="mb-6">
+              <p className="text-sm text-muted-foreground mb-1">Transaction Hash</p>
+              <p className="font-mono text-sm break-all">{hash}</p>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Block</p>
-                  <Link
-                    to={`/block/${transaction.block}`}
-                    className="text-primary hover:text-primary-glow transition-colors font-semibold"
-                  >
-                    {transaction.block}
-                  </Link>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Timestamp</p>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm">{new Date(transaction.timestamp).toLocaleString()}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">From</p>
-                    <Link
-                      to={`/address/${transaction.from}`}
-                      className="font-mono text-sm text-primary hover:text-primary-glow transition-colors break-all"
-                    >
-                      {transaction.from}
-                    </Link>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">To</p>
-                    <Link
-                      to={`/address/${transaction.to}`}
-                      className="font-mono text-sm text-primary hover:text-primary-glow transition-colors break-all"
-                    >
-                      {transaction.to}
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Value</p>
-                    <p className="font-semibold text-lg">{transaction.value}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Transaction Fee</p>
-                    <p className="text-sm">{transaction.transactionFee}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Gas Price</p>
-                    <p className="text-sm">{transaction.gasPrice}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Gas Limit</p>
-                    <p className="text-sm">{transaction.gasLimit}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Gas Used</p>
-                    <p className="text-sm">{transaction.gasUsed}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Nonce</p>
-                    <p className="text-sm">{transaction.nonce}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Position in Block</p>
-                    <p className="text-sm">{transaction.position}</p>
-                  </div>
-                </div>
-              </div>
+            <div className="text-center py-12">
+              <ArrowRightLeft className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+              <p className="text-lg font-semibold text-foreground mb-2">Coming Soon</p>
+              <p className="text-sm text-muted-foreground">
+                Transaction details will be displayed here once connected to the network.
+              </p>
             </div>
           </CardContent>
         </Card>

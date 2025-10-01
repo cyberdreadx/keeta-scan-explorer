@@ -34,45 +34,35 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
             title="Representatives"
-            value={isLoading ? "..." : networkStats?.totalRepresentatives?.toString() || "0"}
+            value="Coming Soon"
             icon={Box}
             change="Network validators"
           />
           <StatsCard
             title="Active Validators"
-            value={isLoading ? "..." : networkStats?.activeRepresentatives?.toString() || "0"}
+            value="Coming Soon"
             icon={Activity}
             change="With voting weight"
           />
           <StatsCard
             title="Network"
-            value="Keeta Test"
+            value="Coming Soon"
             icon={ArrowRightLeft}
-            change="Connected"
+            change="Preparing connection"
           />
           <StatsCard
             title="Status"
-            value={isLoading ? "Loading..." : "Live"}
+            value="Coming Soon"
             icon={Users}
           />
         </div>
 
         {/* Latest Data */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12">
-          <div className="space-y-6">
-            <LatestBlocks />
-          </div>
-          <div className="space-y-6">
-            <LatestTransactions />
-            {!isLoading && networkStats?.representatives && (
-              <RepresentativesList representatives={networkStats.representatives} />
-            )}
-          </div>
+          <LatestBlocks />
+          <LatestTransactions />
         </div>
       </div>
-
-      {/* Debug Panel */}
-      <DebugPanel />
     </div>
   );
 };

@@ -50,28 +50,19 @@ const AddressDetail = () => {
             <CardHeader>
               <CardTitle>Overview</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Address</p>
                 <p className="font-mono text-sm break-all">{address}</p>
               </div>
 
-              {isLoading ? (
-                <p className="text-muted-foreground">Loading account data...</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Transactions</p>
-                    <p className="text-2xl font-bold">{accountData?.totalTransactions || 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Status</p>
-                    <Badge variant="default" className="mt-2">
-                      {accountData?.totalTransactions ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </div>
-                </div>
-              )}
+              <div className="text-center py-12 mt-6">
+                <Wallet className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+                <p className="text-lg font-semibold text-foreground mb-2">Coming Soon</p>
+                <p className="text-sm text-muted-foreground">
+                  Address details and transactions will be displayed here once connected to the network.
+                </p>
+              </div>
             </CardContent>
           </Card>
 
@@ -83,68 +74,9 @@ const AddressDetail = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <p className="text-muted-foreground">Loading transactions...</p>
-              ) : !accountData?.transactions || accountData.transactions.length === 0 ? (
-                <p className="text-muted-foreground">No transactions found for this address.</p>
-              ) : (
-                <div className="space-y-3">
-                  {accountData.transactions.map((block) => {
-                    const isOutgoing = block.account === address;
-                    const operation = block.operations?.[0];
-                    const otherAddress = isOutgoing ? operation?.to : block.account;
-                    
-                    return (
-                      <div
-                        key={block.$hash || block.hash}
-                        className="p-4 rounded-lg border border-border hover:bg-accent/5 transition-colors"
-                      >
-                        <div className="flex items-start justify-between gap-4 mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant={isOutgoing ? "destructive" : "default"} className="text-xs">
-                                {isOutgoing ? "OUT" : "IN"}
-                              </Badge>
-                              <span className="text-xs text-muted-foreground">
-                                {formatTimestamp(block.date)}
-                              </span>
-                            </div>
-                            <Link
-                              to={`/tx/${block.$hash || block.hash}`}
-                              className="font-mono text-sm text-primary hover:text-primary-glow transition-colors"
-                            >
-                              {shortenHash(block.$hash || block.hash)}
-                            </Link>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <p className="text-xs text-muted-foreground mb-1">
-                              {isOutgoing ? "To" : "From"}
-                            </p>
-                            {otherAddress && (
-                              <Link
-                                to={`/address/${otherAddress}`}
-                                className="font-mono text-primary hover:text-primary-glow transition-colors break-all text-xs"
-                              >
-                                {shortenHash(otherAddress)}
-                              </Link>
-                            )}
-                          </div>
-                          {operation?.amount && (
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">Value</p>
-                              <p className={`font-semibold ${isOutgoing ? 'text-destructive' : 'text-success'}`}>
-                                {isOutgoing ? '-' : '+'}{formatAmount(operation.amount)}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Transaction history coming soon</p>
+              </div>
             </CardContent>
           </Card>
         </div>
