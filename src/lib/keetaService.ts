@@ -49,52 +49,24 @@ export const keetaService = {
   },
 
   // Get recent blocks from the network (prioritize fresh votes via a CORS-friendly rep, fallback to history)
+  // Get recent blocks reliably using primary rep history (no votes/after to avoid CORS)
   async getRecentBlocks() {
     try {
       const reps = await this.getRepresentatives();
       const primary = reps.find(r => r.endpoints.api.includes('rep1.test.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
       if (!primary) return [];
 
-      let allBlocks: Block[] = [];
-      const lookbacksMin = [5, 60, 1440];
+      const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
+      const res = await fetch(url, { headers: { Accept: 'application/json' } });
+      if (!res.ok) return [];
+      const data = await res.json();
 
-      // Try votes/after on primary rep only (avoid CORS errors from others)
-      for (const minutes of lookbacksMin) {
-        try {
-          const sinceISO = new Date(Date.now() - minutes * 60 * 1000).toISOString();
-          const url = `${primary.endpoints.api}/node/ledger/votes/after?moment=${encodeURIComponent(sinceISO)}&limit=200`;
-          const res = await fetch(url, { headers: { Accept: 'application/json' } });
-          if (res.ok) {
-            const data = await res.json();
-            const staples: any[] = Array.isArray(data) ? data : (data.voteStaples || data.history || []);
-            staples.forEach((item: any) => {
-              const staple = item?.voteStaple || item;
-              if (staple?.blocks) allBlocks.push(...staple.blocks);
-            });
-          }
-          if (allBlocks.length > 0) break;
-        } catch (_) {
-          // swallow
-        }
-      }
+      const allBlocks: Block[] = [];
+      (data.history || []).forEach((item: any) => {
+        if (item?.voteStaple?.blocks) allBlocks.push(...item.voteStaple.blocks);
+        else if (item?.blocks) allBlocks.push(...item.blocks);
+      });
 
-      // Fallback: primary rep's account history
-      if (allBlocks.length === 0) {
-        try {
-          const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
-          const res = await fetch(url, { headers: { Accept: 'application/json' } });
-          if (res.ok) {
-            const data = await res.json();
-            (data.history || []).forEach((item: any) => {
-              if (item?.voteStaple?.blocks) allBlocks.push(...item.voteStaple.blocks);
-            });
-          }
-        } catch (_) {
-          // swallow
-        }
-      }
-
-      // Dedupe and sort
       const seen = new Set<string>();
       const getHash = (b: any) => b?.hash || b?.$hash || b?.blockHash || '';
       const deduped = allBlocks.filter((b) => {
@@ -117,48 +89,23 @@ export const keetaService = {
   },
 
   // Get recent transactions (same source as blocks: votes/after with fallback, CORS-friendly)
+  // Get recent transactions reliably using primary rep history
   async getRecentTransactions() {
     try {
       const reps = await this.getRepresentatives();
       const primary = reps.find(r => r.endpoints.api.includes('rep1.test.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
       if (!primary) return [];
 
-      let allBlocks: Block[] = [];
-      const lookbacksMin = [5, 60, 1440];
+      const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
+      const res = await fetch(url, { headers: { Accept: 'application/json' } });
+      if (!res.ok) return [];
+      const data = await res.json();
 
-      for (const minutes of lookbacksMin) {
-        try {
-          const sinceISO = new Date(Date.now() - minutes * 60 * 1000).toISOString();
-          const url = `${primary.endpoints.api}/node/ledger/votes/after?moment=${encodeURIComponent(sinceISO)}&limit=200`;
-          const res = await fetch(url, { headers: { Accept: 'application/json' } });
-          if (res.ok) {
-            const data = await res.json();
-            const staples: any[] = Array.isArray(data) ? data : (data.voteStaples || data.history || []);
-            staples.forEach((item: any) => {
-              const staple = item?.voteStaple || item;
-              if (staple?.blocks) allBlocks.push(...staple.blocks);
-            });
-          }
-          if (allBlocks.length > 0) break;
-        } catch (_) {
-          // swallow
-        }
-      }
-
-      if (allBlocks.length === 0) {
-        try {
-          const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
-          const res = await fetch(url, { headers: { Accept: 'application/json' } });
-          if (res.ok) {
-            const data = await res.json();
-            (data.history || []).forEach((item: any) => {
-              if (item?.voteStaple?.blocks) allBlocks.push(...item.voteStaple.blocks);
-            });
-          }
-        } catch (_) {
-          // swallow
-        }
-      }
+      const allBlocks: Block[] = [];
+      (data.history || []).forEach((item: any) => {
+        if (item?.voteStaple?.blocks) allBlocks.push(...item.voteStaple.blocks);
+        else if (item?.blocks) allBlocks.push(...item.blocks);
+      });
 
       const seen = new Set<string>();
       const getHash = (b: any) => b?.hash || b?.$hash || b?.blockHash || '';
