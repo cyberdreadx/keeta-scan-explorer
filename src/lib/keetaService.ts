@@ -18,12 +18,14 @@ export interface Representative {
 
 export interface Block {
   hash: string;
+  $hash?: string;
   account: string;
   previous: string;
   network: number;
   operations: any[];
   date: string;
   signature: string;
+  $opening?: boolean;
 }
 
 export interface VoteStaple {
@@ -184,24 +186,48 @@ export const keetaService = {
     }
   },
 
-  // Get account info
+  // Get account info with full transaction history
   async getAccountInfo(address: string) {
     try {
       const representatives = await this.getRepresentatives();
-      const rep = representatives[0];
+      const rep = representatives.find(r => r.weight !== "0x0") || representatives[0];
+      
+      console.log('🔍 Fetching account info for:', address);
       
       const response = await fetch(
-        `${rep.endpoints.api}/node/ledger/account/${address}/chain?start=HEAD&limit=1`
+        `${rep.endpoints.api}/node/ledger/account/${address}/history?limit=100`
       );
       const data = await response.json();
       
+      console.log('📊 Account history response:', data);
+      
+      // Extract all blocks from history
+      const allBlocks: Block[] = [];
+      if (data.history) {
+        data.history.forEach((item: VoteStaple) => {
+          if (item.voteStaple?.blocks) {
+            allBlocks.push(...item.voteStaple.blocks);
+          }
+        });
+      }
+      
+      // Filter transactions involving this address
+      const addressTransactions = allBlocks.filter(block => 
+        block.account === address || 
+        block.operations?.some((op: any) => op.to === address)
+      );
+      
+      console.log('📋 Transactions for address:', addressTransactions.length);
+      
       return {
         address,
-        balance: "0 KTA", // Balance calculation would require more API exploration
-        transactions: data.blocks?.length || 0,
+        transactions: addressTransactions.sort((a, b) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        ),
+        totalTransactions: addressTransactions.length,
       };
     } catch (error) {
-      console.error('Error fetching account info:', error);
+      console.error('❌ Error fetching account info:', error);
       return null;
     }
   },
