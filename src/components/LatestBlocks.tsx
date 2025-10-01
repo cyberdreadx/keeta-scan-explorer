@@ -21,6 +21,8 @@ const LatestBlocks = () => {
     return `${hash.substring(0, 10)}...${hash.substring(hash.length - 6)}`;
   };
 
+  const getBlockHash = (b: { hash?: string; $hash?: string }) => b?.hash || b?.$hash || "";
+
   return (
     <Card>
       <CardHeader>
@@ -38,7 +40,7 @@ const LatestBlocks = () => {
           <div className="space-y-3">
             {blocks.map((block) => (
               <div
-                key={block.hash}
+                key={getBlockHash(block) || `${block.account}-${block.date}`}
                 className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/5 transition-colors"
               >
                 <div className="flex items-center gap-4">
@@ -47,10 +49,10 @@ const LatestBlocks = () => {
                   </div>
                   <div>
                     <Link
-                      to={`/block/${block.hash}`}
+                      to={`/block/${getBlockHash(block)}`}
                       className="font-mono text-sm text-primary hover:text-primary-glow transition-colors"
                     >
-                      {shortenHash(block.hash)}
+                      {shortenHash(getBlockHash(block))}
                     </Link>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                       <Clock className="h-3 w-3" />
