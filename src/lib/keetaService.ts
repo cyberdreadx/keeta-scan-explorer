@@ -39,41 +39,19 @@ export const keetaService = {
   // Get network representatives (validators)
   async getRepresentatives(): Promise<Representative[]> {
     try {
-      // Try multiple mainnet endpoints for redundancy
-      const endpoints = [
-        'https://rep1.main.network.api.keeta.com/api/node/ledger/representatives',
-        'https://rep4.main.network.api.keeta.com/api/node/ledger/representatives',
-      ];
-      
-      for (const endpoint of endpoints) {
-        try {
-          const response = await fetch(endpoint);
-          if (response.ok) {
-            const data = await response.json();
-            return data.representatives || [];
-          }
-        } catch (e) {
-          console.log(`Failed to fetch from ${endpoint}, trying next...`);
-        }
-      }
-      
-      return [];
+      const response = await fetch('https://rep1.main.network.api.keeta.com/api/node/ledger/representatives');
+      const data = await response.json();
+      return data.representatives || [];
     } catch (error) {
       console.error('Error fetching representatives:', error);
       return [];
     }
   },
 
-  // Get recent blocks from the network (prioritize fresh votes via a CORS-friendly rep, fallback to history)
-  // Get recent blocks reliably using primary rep history (no votes/after to avoid CORS)
+  // Get recent blocks from the network using global history endpoint
   async getRecentBlocks() {
     try {
-      const reps = await this.getRepresentatives();
-      // Find any active mainnet representative (prefer rep1, but use any with weight)
-      const primary = reps.find(r => r.weight !== '0x0' && r.endpoints.api.includes('main.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
-      if (!primary) return [];
-
-      const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
+      const url = 'https://rep4.main.network.api.keeta.com/api/node/ledger/history?limit=200';
       const res = await fetch(url, { headers: { Accept: 'application/json' } });
       if (!res.ok) return [];
       const data = await res.json();
@@ -105,16 +83,10 @@ export const keetaService = {
     }
   },
 
-  // Get recent transactions (same source as blocks: votes/after with fallback, CORS-friendly)
-  // Get recent transactions reliably using primary rep history
+  // Get recent transactions using global history endpoint
   async getRecentTransactions() {
     try {
-      const reps = await this.getRepresentatives();
-      // Find any active mainnet representative (prefer rep1, but use any with weight)
-      const primary = reps.find(r => r.weight !== '0x0' && r.endpoints.api.includes('main.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
-      if (!primary) return [];
-
-      const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
+      const url = 'https://rep4.main.network.api.keeta.com/api/node/ledger/history?limit=200';
       const res = await fetch(url, { headers: { Accept: 'application/json' } });
       if (!res.ok) return [];
       const data = await res.json();
@@ -149,6 +121,11 @@ export const keetaService = {
   // Get network statistics
   async getNetworkStats() {
     try {
+      // Fetch from node stats endpoint
+      const statsResponse = await fetch('https://rep4.main.network.api.keeta.com/api/node/stats');
+      const stats = await statsResponse.json();
+      
+      // Also get representatives for additional info
       const representatives = await this.getRepresentatives();
       const activeReps = representatives.filter(rep => rep.weight !== "0x0");
       
@@ -162,6 +139,7 @@ export const keetaService = {
         activeRepresentatives: activeReps.length,
         totalWeight: totalWeight.toString(16),
         representatives,
+        nodeStats: stats, // Include raw node stats
       };
     } catch (error) {
       console.error('Error fetching network stats:', error);
