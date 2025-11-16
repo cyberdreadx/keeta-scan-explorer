@@ -3,8 +3,10 @@ import StatsCard from "@/components/StatsCard";
 import LatestBlocks from "@/components/LatestBlocks";
 import LatestTransactions from "@/components/LatestTransactions";
 import { Box, ArrowRightLeft, Users, Activity } from "lucide-react";
+import { useNetworkStats } from "@/hooks/useKeetaData";
 
 const Home = () => {
+  const { data: networkStats } = useNetworkStats();
 
   return (
     <div className="min-h-screen bg-background">
@@ -30,26 +32,27 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
             title="Representatives"
-            value="Coming Soon"
+            value={networkStats?.totalRepresentatives.toString() || "0"}
             icon={Box}
             change="Network validators"
           />
           <StatsCard
             title="Active Validators"
-            value="Coming Soon"
+            value={networkStats?.activeRepresentatives.toString() || "0"}
             icon={Activity}
             change="With voting weight"
           />
           <StatsCard
             title="Network"
-            value="Coming Soon"
+            value="Test Network"
             icon={ArrowRightLeft}
-            change="Preparing connection"
+            change="Connected"
           />
           <StatsCard
             title="Status"
-            value="Coming Soon"
+            value="Live"
             icon={Users}
+            change="Syncing"
           />
         </div>
 
