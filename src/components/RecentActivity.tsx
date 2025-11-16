@@ -38,13 +38,15 @@ const RecentActivity = () => {
   const getOperationBadge = (type: number) => {
     switch (type) {
       case 0:
-        return <Badge variant="destructive" className="text-xs">Send</Badge>;
+        return <Badge variant="destructive" className="text-[10px] px-2 py-0.5">Send</Badge>;
       case 1:
-        return <Badge variant="default" className="text-xs bg-green-600">Receive</Badge>;
+        return <Badge className="text-[10px] px-2 py-0.5 bg-blue-600 hover:bg-blue-700">Receive</Badge>;
       case 2:
-        return <Badge variant="secondary" className="text-xs">Fee</Badge>;
+        return <Badge variant="secondary" className="text-[10px] px-2 py-0.5">Fee</Badge>;
+      case 7:
+        return <Badge variant="secondary" className="text-[10px] px-2 py-0.5 bg-cyan-600/20 text-cyan-400 hover:bg-cyan-600/30">Admin Supply</Badge>;
       default:
-        return <Badge variant="outline" className="text-xs">Unknown</Badge>;
+        return <Badge variant="outline" className="text-[10px] px-2 py-0.5">Unknown</Badge>;
     }
   };
 
@@ -65,14 +67,13 @@ const RecentActivity = () => {
   };
 
   return (
-    <Card className="col-span-full">
-      <CardHeader>
+    <Card className="col-span-full border-border bg-card">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <ArrowRightLeft className="h-5 w-5 text-primary" />
+          <CardTitle className="text-xl font-bold text-foreground">
             Recent Activity
           </CardTitle>
-          <Link to="/explorer" className="text-sm text-primary hover:underline flex items-center gap-1">
+          <Link to="/explorer" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
             View all
             <ArrowUpRight className="h-3 w-3" />
           </Link>
@@ -94,74 +95,71 @@ const RecentActivity = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border text-left text-sm text-muted-foreground">
-                  <th className="pb-3 font-medium">Block Hash</th>
-                  <th className="pb-3 font-medium">Account</th>
-                  <th className="pb-3 font-medium">Operations</th>
-                  <th className="pb-3 font-medium text-right">Amount</th>
-                  <th className="pb-3 font-medium text-right">To</th>
-                  <th className="pb-3 font-medium text-right">Time</th>
+                <tr className="border-b border-border text-left text-xs font-medium text-muted-foreground">
+                  <th className="pb-3 pl-4">Block Hash</th>
+                  <th className="pb-3">Account</th>
+                  <th className="pb-3">Operations</th>
+                  <th className="pb-3 text-right">Amount</th>
+                  <th className="pb-3 text-right pr-4">To</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/50">
                 {transactions.slice(0, 15).map((tx) => {
                   const hash = tx.hash || tx.$hash || "";
                   const operations = tx.operations || [];
                   const firstOp = operations[0] || {};
                   
                   return (
-                    <tr key={hash} className="hover:bg-accent/50 transition-colors">
-                      <td className="py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">
-                            {getOperationDescription(tx)}
-                          </span>
+                    <tr key={hash} className="hover:bg-muted/20 transition-colors group">
+                      <td className="py-4 pl-4">
+                        <div className="flex flex-col gap-1">
+                          <Link
+                            to={`/block/${hash}`}
+                            className="font-mono text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                          >
+                            {shortenHash(hash)}
+                            <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </Link>
                         </div>
-                        <Link
-                          to={`/block/${hash}`}
-                          className="font-mono text-xs text-primary hover:underline"
-                        >
-                          {shortenHash(hash)}
-                        </Link>
                       </td>
-                      <td className="py-3">
+                      <td className="py-4">
                         <Link
                           to={`/address/${tx.account}`}
-                          className="font-mono text-xs text-foreground hover:text-primary transition-colors"
+                          className="font-mono text-xs text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
                         >
                           {shortenAddress(tx.account)}
+                          <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </Link>
                       </td>
-                      <td className="py-3">
-                        <div className="flex gap-1">
-                          {operations.map((op: any, idx: number) => (
-                            <div key={idx}>
-                              {getOperationBadge(op.type)}
-                            </div>
-                          ))}
+                      <td className="py-4">
+                        <div className="flex gap-1 flex-wrap">
+                          {operations.length > 1 && (
+                            <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
+                              {operations.length}x {getOperationBadge(operations[0].type).props.children}
+                            </Badge>
+                          )}
+                          {operations.length === 1 && getOperationBadge(operations[0].type)}
                         </div>
                       </td>
-                      <td className="py-3 text-right">
-                        <span className="font-mono text-sm font-medium">
+                      <td className="py-4 text-right">
+                        <span className="font-mono text-sm font-medium text-foreground">
                           {formatAmount(firstOp.amount || "0x0")} KTA
                         </span>
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-4 text-right pr-4">
                         {firstOp.to ? (
                           <Link
                             to={`/address/${firstOp.to}`}
-                            className="font-mono text-xs text-foreground hover:text-primary transition-colors"
+                            className="font-mono text-xs text-foreground/80 hover:text-primary transition-colors inline-flex items-center gap-1"
                           >
                             {shortenAddress(firstOp.to)}
+                            <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </Link>
+                        ) : operations.length > 1 ? (
+                          <span className="text-xs text-muted-foreground">{operations.length} accounts</span>
                         ) : (
                           <span className="text-xs text-muted-foreground">-</span>
                         )}
-                      </td>
-                      <td className="py-3 text-right">
-                        <span className="text-xs text-muted-foreground">
-                          {formatTimestamp(tx.date)}
-                        </span>
                       </td>
                     </tr>
                   );

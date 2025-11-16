@@ -1,64 +1,34 @@
-import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Search, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const Header = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-
-    // Determine search type based on query
-    if (searchQuery.startsWith("0x") && searchQuery.length === 66) {
-      navigate(`/tx/${searchQuery}`);
-    } else if (searchQuery.startsWith("0x") && searchQuery.length === 42) {
-      navigate(`/address/${searchQuery}`);
-    } else if (!isNaN(Number(searchQuery))) {
-      navigate(`/block/${searchQuery}`);
-    }
-  };
-
   return (
-    <header className="border-b border-border bg-card sticky top-0 z-50 backdrop-blur-sm bg-card/80">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">K</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                KeetaScan
-              </h1>
-              <p className="text-xs text-muted-foreground">Keeta Network Explorer</p>
-            </div>
-          </Link>
-
-          <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
+    <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+      <div className="container mx-auto px-6 py-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="lg:hidden">
+              <Menu className="h-5 w-5" />
+            </Button>
+            <Link to="/" className="flex items-center gap-2">
+              <span className="text-lg font-semibold text-foreground">Network</span>
+            </Link>
+          </div>
+          
+          <div className="flex-1 max-w-md">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                type="text"
-                placeholder="Search by Address / Txn Hash / Block"
-                className="pl-10 bg-background"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search tokens..."
+                className="pl-10 bg-muted/50 border-border"
               />
+              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                ⌘ K
+              </kbd>
             </div>
-          </form>
-
-          <nav className="flex items-center gap-2">
-            <Link to="/">
-              <Button variant="ghost" size="sm">
-                Home
-              </Button>
-            </Link>
-          </nav>
+          </div>
         </div>
       </div>
     </header>
