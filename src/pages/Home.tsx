@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import StatsCard from "@/components/StatsCard";
 import LatestBlocks from "@/components/LatestBlocks";
 import LatestTransactions from "@/components/LatestTransactions";
+import RecentActivity from "@/components/RecentActivity";
 import { Box, ArrowRightLeft, Users, Activity } from "lucide-react";
 import { useNetworkStats } from "@/hooks/useKeetaData";
 
@@ -54,6 +55,11 @@ const Home = () => {
             icon={Users}
             change="Syncing"
           />
+        </div>
+
+        {/* Recent Activity */}
+        <div className="mb-8">
+          <RecentActivity />
         </div>
 
         {/* Latest Data */}
