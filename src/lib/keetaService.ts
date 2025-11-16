@@ -39,9 +39,25 @@ export const keetaService = {
   // Get network representatives (validators)
   async getRepresentatives(): Promise<Representative[]> {
     try {
-      const response = await fetch('https://rep1.network.api.keeta.com/api/node/ledger/representatives');
-      const data = await response.json();
-      return data.representatives || [];
+      // Try multiple mainnet endpoints for redundancy
+      const endpoints = [
+        'https://rep1.main.network.api.keeta.com/api/node/ledger/representatives',
+        'https://rep4.main.network.api.keeta.com/api/node/ledger/representatives',
+      ];
+      
+      for (const endpoint of endpoints) {
+        try {
+          const response = await fetch(endpoint);
+          if (response.ok) {
+            const data = await response.json();
+            return data.representatives || [];
+          }
+        } catch (e) {
+          console.log(`Failed to fetch from ${endpoint}, trying next...`);
+        }
+      }
+      
+      return [];
     } catch (error) {
       console.error('Error fetching representatives:', error);
       return [];
@@ -53,7 +69,8 @@ export const keetaService = {
   async getRecentBlocks() {
     try {
       const reps = await this.getRepresentatives();
-      const primary = reps.find(r => r.endpoints.api.includes('rep1.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
+      // Find any active mainnet representative (prefer rep1, but use any with weight)
+      const primary = reps.find(r => r.weight !== '0x0' && r.endpoints.api.includes('main.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
       if (!primary) return [];
 
       const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
@@ -93,7 +110,8 @@ export const keetaService = {
   async getRecentTransactions() {
     try {
       const reps = await this.getRepresentatives();
-      const primary = reps.find(r => r.endpoints.api.includes('rep1.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
+      // Find any active mainnet representative (prefer rep1, but use any with weight)
+      const primary = reps.find(r => r.weight !== '0x0' && r.endpoints.api.includes('main.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
       if (!primary) return [];
 
       const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
