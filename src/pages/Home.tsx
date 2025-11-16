@@ -3,7 +3,7 @@ import StatsCard from "@/components/StatsCard";
 import LatestBlocks from "@/components/LatestBlocks";
 import LatestTransactions from "@/components/LatestTransactions";
 import RecentActivity from "@/components/RecentActivity";
-import { Box, ArrowRightLeft, Users, Activity } from "lucide-react";
+import { Box, TrendingDown, Shield, Network } from "lucide-react";
 import { useNetworkStats } from "@/hooks/useKeetaData";
 
 const Home = () => {
@@ -12,48 +12,33 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[var(--gradient-hero)] opacity-50" />
-        <div className="container mx-auto px-4 py-12 relative">
-          <div className="text-center space-y-4">
-            <h2 className="text-4xl font-bold">
-              Keeta Network Explorer
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Track transactions, explore blocks, and analyze the Keeta blockchain in real-time
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Stats Section */}
-      <div className="container mx-auto px-4 -mt-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <section className="container mx-auto px-4 py-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <StatsCard
+            title="KTA Price"
+            value="$0.289631"
+            icon={TrendingDown}
+            change="-9.01% (24h)"
+          />
           <StatsCard
             title="Representatives"
-            value={networkStats?.totalRepresentatives.toString() || "0"}
+            value={networkStats?.activeRepresentatives?.toString() || "0"}
             icon={Box}
-            change="Network validators"
+            subtitle="Active Representatives on Network"
           />
           <StatsCard
-            title="Active Validators"
-            value={networkStats?.activeRepresentatives.toString() || "0"}
-            icon={Activity}
-            change="With voting weight"
+            title="Blocks"
+            value={networkStats?.nodeStats?.ledger?.blockCount?.toLocaleString() || "0"}
+            icon={Shield}
+            subtitle="Total Blocks on Network"
           />
           <StatsCard
-            title="Network"
-            value="Mainnet"
-            icon={ArrowRightLeft}
-            change="Connected"
-          />
-          <StatsCard
-            title="Status"
-            value="Live"
-            icon={Users}
-            change="Syncing"
+            title="Transactions"
+            value={networkStats?.nodeStats?.ledger?.transactionCount?.toLocaleString() || "0"}
+            icon={Network}
+            subtitle="Total Transactions on Network"
           />
         </div>
 
@@ -67,7 +52,7 @@ const Home = () => {
           <LatestBlocks />
           <LatestTransactions />
         </div>
-      </div>
+      </section>
     </div>
   );
 };

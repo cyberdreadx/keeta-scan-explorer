@@ -6,24 +6,26 @@ interface StatsCardProps {
   value: string;
   icon: LucideIcon;
   change?: string;
+  subtitle?: string;
 }
 
-const StatsCard = ({ title, value, icon: Icon, change }: StatsCardProps) => {
+const StatsCard = ({ title, value, icon: Icon, change, subtitle }: StatsCardProps) => {
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="border-border bg-card hover:bg-accent/5 transition-colors">
       <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
-            {change && (
-              <p className="text-xs text-success">{change}</p>
-            )}
-          </div>
-          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-            <Icon className="h-6 w-6 text-primary" />
+        <div className="flex items-start justify-between mb-3">
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center">
+            <Icon className="h-4 w-4 text-muted-foreground" />
           </div>
         </div>
+        <p className="text-3xl font-bold text-foreground mb-1">{value}</p>
+        {change && (
+          <p className="text-xs text-destructive font-medium">{change}</p>
+        )}
+        {subtitle && (
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
+        )}
       </CardContent>
     </Card>
   );
