@@ -4,31 +4,31 @@ import { keetaService } from '@/lib/keetaService';
 export const useNetworkStats = () => {
   return useQuery({
     queryKey: ['network-stats'],
-    queryFn: () => Promise.resolve({ totalRepresentatives: 0, activeRepresentatives: 0, totalWeight: "0", representatives: [] }),
-    enabled: false, // Disabled for now
+    queryFn: () => keetaService.getNetworkStats(),
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 };
 
 export const useRecentBlocks = () => {
   return useQuery({
     queryKey: ['recent-blocks'],
-    queryFn: () => Promise.resolve([]),
-    enabled: false, // Disabled for now
+    queryFn: () => keetaService.getRecentBlocks(),
+    refetchInterval: 10000, // Refetch every 10 seconds
   });
 };
 
 export const useRecentTransactions = () => {
   return useQuery({
     queryKey: ['recent-transactions'],
-    queryFn: () => Promise.resolve([]),
-    enabled: false, // Disabled for now
+    queryFn: () => keetaService.getRecentTransactions(),
+    refetchInterval: 10000, // Refetch every 10 seconds
   });
 };
 
 export const useAccountInfo = (address: string | undefined) => {
   return useQuery({
     queryKey: ['account-info', address],
-    queryFn: () => Promise.resolve(null),
-    enabled: false, // Disabled for now
+    queryFn: () => address ? keetaService.getAccountInfo(address) : null,
+    enabled: !!address,
   });
 };
