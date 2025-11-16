@@ -44,7 +44,7 @@ const Home = () => {
           />
           <StatsCard
             title="Network"
-            value="Test Network"
+            value="Mainnet"
             icon={ArrowRightLeft}
             change="Connected"
           />
