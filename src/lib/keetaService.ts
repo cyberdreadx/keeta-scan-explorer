@@ -1,10 +1,10 @@
 import * as KeetaNet from '@keetanetwork/keetanet-client';
 
 // Initialize a client to fetch network-level data (kept for future use)
-const createTestClient = () => {
+const createMainnetClient = () => {
   const seed = KeetaNet.lib.Account.generateRandomSeed({ asString: true });
   const account = KeetaNet.lib.Account.fromSeed(seed, 0);
-  return KeetaNet.UserClient.fromNetwork('test', account);
+  return KeetaNet.UserClient.fromNetwork('main', account);
 };
 
 export interface Representative {
@@ -39,7 +39,7 @@ export const keetaService = {
   // Get network representatives (validators)
   async getRepresentatives(): Promise<Representative[]> {
     try {
-      const response = await fetch('https://rep1.test.network.api.keeta.com/api/node/ledger/representatives');
+      const response = await fetch('https://rep1.network.api.keeta.com/api/node/ledger/representatives');
       const data = await response.json();
       return data.representatives || [];
     } catch (error) {
@@ -53,7 +53,7 @@ export const keetaService = {
   async getRecentBlocks() {
     try {
       const reps = await this.getRepresentatives();
-      const primary = reps.find(r => r.endpoints.api.includes('rep1.test.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
+      const primary = reps.find(r => r.endpoints.api.includes('rep1.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
       if (!primary) return [];
 
       const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
@@ -93,7 +93,7 @@ export const keetaService = {
   async getRecentTransactions() {
     try {
       const reps = await this.getRepresentatives();
-      const primary = reps.find(r => r.endpoints.api.includes('rep1.test.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
+      const primary = reps.find(r => r.endpoints.api.includes('rep1.network.api.keeta.com')) || reps.find(r => r.weight !== '0x0') || reps[0];
       if (!primary) return [];
 
       const url = `${primary.endpoints.api}/node/ledger/account/${primary.representative}/history?limit=200`;
