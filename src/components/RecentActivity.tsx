@@ -1,9 +1,9 @@
 import { useRecentTransactions } from "@/hooks/useKeetaData";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { ExternalLink, Coins, Anchor } from "lucide-react";
+import { ExternalLink, Coins, Anchor, ArrowRightLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getOperationType, formatKeetaAddress, formatKeetaAmount } from "@/lib/keetaOperations";
+import { getOperationType, formatKeetaAddress, formatKeetaAmount, isAtomicSwap, getSwapAmounts } from "@/lib/keetaOperations";
 
 export const RecentActivity = () => {
   const { data: transactions, isLoading } = useRecentTransactions();
@@ -63,6 +63,8 @@ export const RecentActivity = () => {
       <div className="space-y-4">
         {transactions.slice(0, 10).map((tx: any) => {
           const hash = tx.$hash || tx.hash || "N/A";
+          const isSwap = isAtomicSwap(tx.operations);
+          const swapAmounts = isSwap ? getSwapAmounts(tx.operations) : null;
           
           return (
             <Card 
@@ -73,13 +75,17 @@ export const RecentActivity = () => {
               <div className="p-6 space-y-4">
                 {/* Transaction Title */}
                 <div className="flex items-center gap-2 mb-3">
-                  {tx.operations?.[0] && (() => {
-                    const opType = getOperationType(tx.operations[0].type);
-                    const OpIcon = opType.icon;
-                    return <OpIcon className="w-5 h-5" style={{ color: opType.color }} />;
-                  })()}
+                  {isSwap ? (
+                    <ArrowRightLeft className="w-5 h-5 text-blue-500" />
+                  ) : (
+                    tx.operations?.[0] && (() => {
+                      const opType = getOperationType(tx.operations[0].type);
+                      const OpIcon = opType.icon;
+                      return <OpIcon className="w-5 h-5" style={{ color: opType.color }} />;
+                    })()
+                  )}
                   <h3 className="text-lg font-semibold text-foreground">
-                    {tx.purpose === 1 ? 'Admin Transaction' : 'Transaction'}
+                    {isSwap ? 'Atomic Swap' : (tx.purpose === 1 ? 'Admin Transaction' : 'Transaction')}
                   </h3>
                   <span className="text-sm text-muted-foreground ml-auto">
                     {new Date(tx.date).toLocaleString()}
@@ -87,9 +93,15 @@ export const RecentActivity = () => {
                 </div>
 
                 {/* Description */}
-                <p className="text-sm text-muted-foreground mb-4">
-                  {tx.operations?.[0]?.amount && formatKeetaAmount(tx.operations[0].amount)} KTA to {formatKeetaAddress(tx.operations[0].to || tx.account)}
-                </p>
+                {isSwap && swapAmounts ? (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {swapAmounts.from} KTA - {swapAmounts.to} KTA
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {tx.operations?.[0]?.amount && formatKeetaAmount(tx.operations[0].amount)} KTA to {formatKeetaAddress(tx.operations[0].to || tx.account)}
+                  </p>
+                )}
 
                 {/* Inner card with details */}
                 <Card className="bg-background/50 border-border/50">
