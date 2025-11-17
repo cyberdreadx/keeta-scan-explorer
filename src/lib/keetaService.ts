@@ -193,16 +193,46 @@ export const keetaService = {
   // Get base anchor information
   async getBaseAnchor() {
     try {
-      const response = await fetch('https://rep1.main.network.api.keeta.com/api/node/info');
+      // Try the ledger info endpoint
+      let response = await fetch('https://rep4.main.network.api.keeta.com/api/node/ledger/info');
+      
+      if (!response.ok) {
+        // Fallback to node info
+        response = await fetch('https://rep4.main.network.api.keeta.com/api/node/info');
+      }
+      
       const data = await response.json();
+      console.log('📍 Base Anchor API Response:', data);
+      
+      // Try different possible field names
+      const hash = data.baseAnchor?.hash || data.baseAnchor || data.base_anchor?.hash || data.base_anchor || data.anchor?.hash || data.anchor;
+      const height = data.baseAnchorHeight || data.base_anchor_height || data.anchorHeight || 0;
+      const timestamp = data.baseAnchorTimestamp || data.base_anchor_timestamp || data.anchorTimestamp || Date.now() / 1000;
       
       return {
-        hash: data.baseAnchor?.hash || data.baseAnchor || 'N/A',
-        height: data.baseAnchorHeight || 0,
-        timestamp: data.baseAnchorTimestamp || Date.now() / 1000,
+        hash: hash || 'N/A',
+        height,
+        timestamp,
       };
     } catch (error) {
-      console.error('Error fetching base anchor:', error);
+      console.error('❌ Error fetching base anchor:', error);
+      // Return a fallback using the most recent block from history as base anchor
+      try {
+        const historyResponse = await fetch('https://rep4.main.network.api.keeta.com/api/node/ledger/history?limit=1');
+        const historyData = await historyResponse.json();
+        const latestBlock = historyData.history?.[0]?.blocks?.[0];
+        
+        if (latestBlock) {
+          console.log('📍 Using latest block as base anchor:', latestBlock);
+          return {
+            hash: latestBlock.$hash || latestBlock.hash,
+            height: 0,
+            timestamp: latestBlock.date ? new Date(latestBlock.date).getTime() / 1000 : Date.now() / 1000,
+          };
+        }
+      } catch (fallbackError) {
+        console.error('❌ Fallback also failed:', fallbackError);
+      }
       return null;
     }
   },
