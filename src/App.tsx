@@ -7,6 +7,10 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Home from "./pages/Home";
+import Blocks from "./pages/Blocks";
+import Transactions from "./pages/Transactions";
+import Representatives from "./pages/Representatives";
+import Statistics from "./pages/Statistics";
 import BlockDetail from "./pages/BlockDetail";
 import TransactionDetail from "./pages/TransactionDetail";
 import AddressDetail from "./pages/AddressDetail";
@@ -27,6 +31,10 @@ const App = () => (
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Home />} />
+                  <Route path="/blocks" element={<Blocks />} />
+                  <Route path="/transactions" element={<Transactions />} />
+                  <Route path="/representatives" element={<Representatives />} />
+                  <Route path="/stats" element={<Statistics />} />
                   <Route path="/block/:id" element={<BlockDetail />} />
                   <Route path="/tx/:hash" element={<TransactionDetail />} />
                   <Route path="/address/:address" element={<AddressDetail />} />
