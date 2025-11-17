@@ -26,7 +26,7 @@ const AddressDetail = () => {
   const formatAmount = (hexAmount: string) => {
     try {
       const amount = BigInt(hexAmount);
-      return (Number(amount) / 1e10).toFixed(4) + " KTA";
+      return (Number(amount) / 1e18).toFixed(4) + " KTA";
     } catch {
       return "0 KTA";
     }
