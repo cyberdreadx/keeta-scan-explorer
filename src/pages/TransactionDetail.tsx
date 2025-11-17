@@ -7,23 +7,6 @@ import { ArrowRightLeft, CheckCircle2, Clock } from "lucide-react";
 const TransactionDetail = () => {
   const { hash } = useParams();
 
-  // Mock data
-  const transaction = {
-    hash: hash || "",
-    status: "success" as const,
-    block: "1,234,567",
-    timestamp: new Date().toISOString(),
-    from: "0x" + Math.random().toString(16).substring(2, 42),
-    to: "0x" + Math.random().toString(16).substring(2, 42),
-    value: "15.5432 KTA",
-    transactionFee: "0.0021 KTA",
-    gasPrice: "20 Gwei",
-    gasLimit: "21,000",
-    gasUsed: "21,000 (100%)",
-    nonce: "42",
-    position: "156",
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -39,16 +22,7 @@ const TransactionDetail = () => {
 
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Overview</CardTitle>
-              <Badge
-                variant="default"
-                className="flex items-center gap-1"
-              >
-                <CheckCircle2 className="h-3 w-3" />
-                {transaction.status}
-              </Badge>
-            </div>
+            <CardTitle>Overview</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mb-6">
