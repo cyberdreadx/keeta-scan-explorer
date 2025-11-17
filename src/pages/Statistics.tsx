@@ -1,10 +1,12 @@
 import Header from "@/components/Header";
 import StatsCard from "@/components/StatsCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Box, TrendingDown, Shield, Network, Activity, Zap } from "lucide-react";
+import { Box, TrendingDown, Shield, Zap } from "lucide-react";
 import { useNetworkStats, useRecentBlocks } from "@/hooks/useKeetaData";
-import { LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useEffect, useState } from "react";
+import { OperationsPerBlockChart } from "@/components/charts/OperationsPerBlockChart";
+import { OperationTypesChart } from "@/components/charts/OperationTypesChart";
+import { BlockTypesChart } from "@/components/charts/BlockTypesChart";
+import { BlockProductionChart } from "@/components/charts/BlockProductionChart";
 
 const Statistics = () => {
   const { data: networkStats } = useNetworkStats();
@@ -55,8 +57,6 @@ const Statistics = () => {
     }
   }, [recentBlocks]);
 
-  const COLORS = ['hsl(262, 83%, 58%)', 'hsl(180, 100%, 45%)', 'hsl(142, 71%, 45%)', 'hsl(0, 84%, 60%)', 'hsl(240, 5%, 65%)', 'hsl(280, 70%, 60%)', 'hsl(45, 100%, 50%)', 'hsl(320, 80%, 55%)'];
-
   const blockDistribution = [
     { name: 'Opening Blocks', value: recentBlocks.filter((b: any) => b.$opening).length },
     { name: 'Standard Blocks', value: recentBlocks.filter((b: any) => !b.$opening).length }
@@ -101,173 +101,11 @@ const Statistics = () => {
         </div>
 
         {/* Charts Grid */}
-        <div className="grid gap-6 lg:grid-cols-2 mb-8">
-          {/* TPS Timeline Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-primary" />
-                Operations Per Block (Recent 20)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={tpsData}>
-                  <defs>
-                    <linearGradient id="colorTps" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis 
-                    dataKey="time" 
-                    stroke="hsl(var(--muted-foreground))"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  />
-                  <YAxis 
-                    stroke="hsl(var(--muted-foreground))"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                      color: 'hsl(var(--card-foreground))'
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="tps" 
-                    stroke="hsl(262, 83%, 58%)" 
-                    fillOpacity={1} 
-                    fill="url(#colorTps)" 
-                    name="Operations"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Operation Types Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Network className="h-5 w-5 text-accent" />
-                Operation Types Distribution
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={operationData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {operationData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                      color: 'hsl(var(--card-foreground))'
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Block Types Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Box className="h-5 w-5 text-success" />
-                Block Types Distribution
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={blockDistribution}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {blockDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? 'hsl(142, 71%, 45%)' : 'hsl(180, 100%, 45%)'} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                      color: 'hsl(var(--card-foreground))'
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Network Activity Trend */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-primary" />
-                Block Production Timeline
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={tpsData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis 
-                    dataKey="time" 
-                    stroke="hsl(var(--muted-foreground))"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  />
-                  <YAxis 
-                    stroke="hsl(var(--muted-foreground))"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                      color: 'hsl(var(--card-foreground))'
-                    }}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="tps" 
-                    stroke="hsl(180, 100%, 45%)" 
-                    strokeWidth={2}
-                    name="Operations"
-                    dot={{ fill: 'hsl(180, 100%, 45%)' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+        <div className="grid gap-4 md:grid-cols-2 mb-8">
+          <OperationsPerBlockChart data={tpsData} height={220} />
+          <OperationTypesChart data={operationData} height={220} />
+          <BlockTypesChart data={blockDistribution} height={220} />
+          <BlockProductionChart data={tpsData} height={220} />
         </div>
       </div>
     </>
