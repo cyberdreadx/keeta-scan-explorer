@@ -28,7 +28,7 @@ const RecentActivity = () => {
 
   const formatAmount = (hexAmount: string) => {
     try {
-      const amount = parseInt(hexAmount, 16) / 1e8;
+      const amount = parseInt(hexAmount, 16) / 1e18;
       return amount.toFixed(3);
     } catch {
       return "0";
