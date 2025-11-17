@@ -10,7 +10,7 @@ const Home = () => {
   const { data: networkStats } = useNetworkStats();
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
       <Header />
 
       {/* Stats Section */}
@@ -53,7 +53,7 @@ const Home = () => {
           <LatestTransactions />
         </div>
       </section>
-    </div>
+    </>
   );
 };
 
