@@ -69,7 +69,8 @@ const Statistics = () => {
   return (
     <>
       <Header />
-      <div className="container mx-auto px-4 py-8">
+      <div className="w-full max-w-[100vw] overflow-x-hidden">
+        <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-foreground">Network Statistics</h1>
         
         {/* Overview Stats */}
@@ -106,6 +107,7 @@ const Statistics = () => {
           <OperationTypesChart data={operationData} height={220} />
           <BlockTypesChart data={blockDistribution} height={220} />
           <BlockProductionChart data={tpsData} height={220} />
+        </div>
         </div>
       </div>
     </>

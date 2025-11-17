@@ -20,7 +20,7 @@ const COLORS = [
 
 export const OperationTypesChart = ({ data, height = 250 }: OperationTypesChartProps) => {
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Network className="h-4 w-4 text-accent" />

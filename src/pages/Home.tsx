@@ -63,8 +63,9 @@ const Home = () => {
       <Header />
 
       {/* Stats Section */}
-      <section className="container mx-auto px-4 py-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <section className="w-full max-w-[100vw] overflow-x-hidden">
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           <StatsCard
             title="KTA Price"
             value="$0.289631"
@@ -91,21 +92,22 @@ const Home = () => {
           />
         </div>
 
-        {/* Charts Preview */}
-        <div className="grid gap-4 md:grid-cols-2 mb-8">
-          <OperationsPerBlockChart data={tpsData} height={200} />
-          <OperationTypesChart data={operationData} height={200} />
-        </div>
+          {/* Charts Preview */}
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-8">
+            <OperationsPerBlockChart data={tpsData} height={200} />
+            <OperationTypesChart data={operationData} height={200} />
+          </div>
 
-        {/* Recent Activity */}
-        <div className="mb-8">
-          <RecentActivity />
-        </div>
+          {/* Recent Activity */}
+          <div className="mb-8">
+            <RecentActivity />
+          </div>
 
-        {/* Latest Data */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12">
-          <LatestBlocks />
-          <LatestTransactions />
+          {/* Latest Data */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12">
+            <LatestBlocks />
+            <LatestTransactions />
+          </div>
         </div>
       </section>
     </>
