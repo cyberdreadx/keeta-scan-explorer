@@ -9,7 +9,7 @@ interface BlockTypesChartProps {
 
 export const BlockTypesChart = ({ data, height = 250 }: BlockTypesChartProps) => {
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Box className="h-4 w-4 text-success" />

@@ -9,7 +9,7 @@ interface OperationsPerBlockChartProps {
 
 export const OperationsPerBlockChart = ({ data, height = 250 }: OperationsPerBlockChartProps) => {
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Activity className="h-4 w-4 text-primary" />
