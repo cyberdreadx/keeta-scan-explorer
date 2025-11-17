@@ -193,12 +193,19 @@ export const keetaService = {
   // Get base anchor information
   async getBaseAnchor() {
     try {
+      const representatives = await this.getRepresentatives();
+      const rep = representatives.find(r => r.weight !== "0x0") || representatives[0];
+      
+      if (!rep) {
+        throw new Error('No representatives available');
+      }
+
       // Try the ledger info endpoint
-      let response = await fetch('https://rep4.main.network.api.keeta.com/api/node/ledger/info');
+      let response = await fetch(`${rep.endpoints.api}/node/ledger/info`);
       
       if (!response.ok) {
         // Fallback to node info
-        response = await fetch('https://rep4.main.network.api.keeta.com/api/node/info');
+        response = await fetch(`${rep.endpoints.api}/node/info`);
       }
       
       const data = await response.json();
@@ -216,23 +223,6 @@ export const keetaService = {
       };
     } catch (error) {
       console.error('❌ Error fetching base anchor:', error);
-      // Return a fallback using the most recent block from history as base anchor
-      try {
-        const historyResponse = await fetch('https://rep4.main.network.api.keeta.com/api/node/ledger/history?limit=1');
-        const historyData = await historyResponse.json();
-        const latestBlock = historyData.history?.[0]?.blocks?.[0];
-        
-        if (latestBlock) {
-          console.log('📍 Using latest block as base anchor:', latestBlock);
-          return {
-            hash: latestBlock.$hash || latestBlock.hash,
-            height: 0,
-            timestamp: latestBlock.date ? new Date(latestBlock.date).getTime() / 1000 : Date.now() / 1000,
-          };
-        }
-      } catch (fallbackError) {
-        console.error('❌ Fallback also failed:', fallbackError);
-      }
       return null;
     }
   },
