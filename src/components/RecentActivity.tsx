@@ -53,7 +53,7 @@ export const RecentActivity = () => {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-3xl font-bold text-foreground">Recent Activity</h2>
         <button 
-          onClick={() => navigate('/explorer')}
+          onClick={() => navigate('/transactions')}
           className="text-sm text-primary hover:text-primary/80 flex items-center gap-1"
         >
           View all →
