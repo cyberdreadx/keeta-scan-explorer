@@ -71,7 +71,7 @@ const BaseAnchor = () => {
           </CardContent>
         </Card>
 
-        {baseAnchorBlocks.length > 0 && (
+        {baseAnchorBlocks.length > 0 ? (
           <Card>
             <CardHeader>
               <CardTitle>Base Anchor Transactions</CardTitle>
@@ -92,7 +92,7 @@ const BaseAnchor = () => {
                       <TableRow key={block.hash || block.$hash}>
                         <TableCell>
                           <Link
-                            to={`/tx/${block.hash || block.$hash}`}
+                            to={`/block/${block.hash || block.$hash}`}
                             className="text-primary hover:underline font-mono text-xs"
                           >
                             {(block.hash || block.$hash)?.substring(0, 16)}...
@@ -125,7 +125,19 @@ const BaseAnchor = () => {
               </div>
             </CardContent>
           </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Base Anchor Transactions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12 text-muted-foreground">
+                No base anchor transactions found in recent blocks
+              </div>
+            </CardContent>
+          </Card>
         )}
+
       </div>
     </div>
   );
