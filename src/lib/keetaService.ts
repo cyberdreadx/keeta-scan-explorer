@@ -189,4 +189,21 @@ export const keetaService = {
       return null;
     }
   },
+
+  // Get base anchor information
+  async getBaseAnchor() {
+    try {
+      const response = await fetch('https://rep1.main.network.api.keeta.com/api/node/info');
+      const data = await response.json();
+      
+      return {
+        hash: data.baseAnchor?.hash || data.baseAnchor || 'N/A',
+        height: data.baseAnchorHeight || 0,
+        timestamp: data.baseAnchorTimestamp || Date.now() / 1000,
+      };
+    } catch (error) {
+      console.error('Error fetching base anchor:', error);
+      return null;
+    }
+  },
 };

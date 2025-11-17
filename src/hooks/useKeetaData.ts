@@ -40,3 +40,11 @@ export const useRepresentatives = () => {
     refetchInterval: 60000, // Refetch every minute
   });
 };
+
+export const useBaseAnchor = () => {
+  return useQuery({
+    queryKey: ['base-anchor'],
+    queryFn: () => keetaService.getBaseAnchor(),
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+};

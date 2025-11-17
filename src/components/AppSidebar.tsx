@@ -1,4 +1,4 @@
-import { Home, Box, Send, User, BarChart3 } from "lucide-react";
+import { Home, Box, Send, User, BarChart3, Anchor } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 import {
@@ -19,6 +19,7 @@ const menuItems = [
   { title: "Transactions", url: "/transactions", icon: Send },
   { title: "Representatives", url: "/representatives", icon: User },
   { title: "Statistics", url: "/stats", icon: BarChart3 },
+  { title: "Base Anchor", url: "/base-anchor", icon: Anchor },
 ];
 
 export function AppSidebar() {
