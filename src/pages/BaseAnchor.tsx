@@ -1,10 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useBaseAnchor } from "@/hooks/useKeetaData";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useBaseAnchor, useRecentBlocks } from "@/hooks/useKeetaData";
 import { Anchor } from "lucide-react";
+import { Link } from "react-router-dom";
+import { getOperationType } from "@/lib/keetaOperations";
 
 const BaseAnchor = () => {
   const { data: baseAnchor, isLoading } = useBaseAnchor();
+  const { data: recentBlocks = [] } = useRecentBlocks();
+
+  // Filter blocks matching the base anchor hash
+  const baseAnchorBlocks = recentBlocks.filter(
+    (block: any) => (block.hash || block.$hash) === baseAnchor?.hash
+  );
 
   if (isLoading) {
     return (
@@ -61,6 +70,62 @@ const BaseAnchor = () => {
             </div>
           </CardContent>
         </Card>
+
+        {baseAnchorBlocks.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Base Anchor Transactions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Hash</TableHead>
+                      <TableHead>Account</TableHead>
+                      <TableHead>Operations</TableHead>
+                      <TableHead>Time</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {baseAnchorBlocks.map((block: any) => (
+                      <TableRow key={block.hash || block.$hash}>
+                        <TableCell>
+                          <Link
+                            to={`/tx/${block.hash || block.$hash}`}
+                            className="text-primary hover:underline font-mono text-xs"
+                          >
+                            {(block.hash || block.$hash)?.substring(0, 16)}...
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <Link
+                            to={`/address/${block.account}`}
+                            className="text-primary hover:underline font-mono text-xs"
+                          >
+                            {block.account?.substring(0, 16)}...
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            {block.operations?.map((op: any, idx: number) => (
+                              <span key={idx} className="text-xs">
+                                {getOperationType(op.type).name}
+                              </span>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {new Date(block.date).toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
