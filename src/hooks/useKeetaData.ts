@@ -32,3 +32,11 @@ export const useAccountInfo = (address: string | undefined) => {
     enabled: !!address,
   });
 };
+
+export const useRepresentatives = () => {
+  return useQuery({
+    queryKey: ['representatives'],
+    queryFn: () => keetaService.getRepresentatives(),
+    refetchInterval: 60000, // Refetch every minute
+  });
+};
