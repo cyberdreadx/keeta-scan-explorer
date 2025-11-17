@@ -120,3 +120,26 @@ export function formatKeetaAmount(hexAmount: string, decimals: number = 18): str
     return '0';
   }
 }
+
+export function isAtomicSwap(operations: any[]): boolean {
+  if (!operations || operations.length < 2) return false;
+  
+  const hasSend = operations.some(op => op.type === 0);
+  const hasReceive = operations.some(op => op.type === 1);
+  
+  return hasSend && hasReceive;
+}
+
+export function getSwapAmounts(operations: any[]): { from: string; to: string } | null {
+  if (!operations || operations.length < 2) return null;
+  
+  const sendOp = operations.find(op => op.type === 0);
+  const receiveOp = operations.find(op => op.type === 1);
+  
+  if (!sendOp || !receiveOp) return null;
+  
+  return {
+    from: formatKeetaAmount(sendOp.amount || '0x0'),
+    to: formatKeetaAmount(receiveOp.amount || '0x0')
+  };
+}
