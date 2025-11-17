@@ -11,6 +11,7 @@ import Blocks from "./pages/Blocks";
 import Transactions from "./pages/Transactions";
 import Representatives from "./pages/Representatives";
 import Statistics from "./pages/Statistics";
+import BaseAnchor from "./pages/BaseAnchor";
 import BlockDetail from "./pages/BlockDetail";
 import TransactionDetail from "./pages/TransactionDetail";
 import AddressDetail from "./pages/AddressDetail";
@@ -35,6 +36,7 @@ const App = () => (
                   <Route path="/transactions" element={<Transactions />} />
                   <Route path="/representatives" element={<Representatives />} />
                   <Route path="/stats" element={<Statistics />} />
+                  <Route path="/base-anchor" element={<BaseAnchor />} />
                   <Route path="/block/:id" element={<BlockDetail />} />
                   <Route path="/tx/:hash" element={<TransactionDetail />} />
                   <Route path="/address/:address" element={<AddressDetail />} />
