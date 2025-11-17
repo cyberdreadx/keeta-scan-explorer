@@ -10,9 +10,9 @@ const BaseAnchor = () => {
   const { data: baseAnchor, isLoading } = useBaseAnchor();
   const { data: recentBlocks = [] } = useRecentBlocks();
 
-  // Filter blocks matching the base anchor hash
+  // Filter blocks with Admin Supply operations (type 6) - these are base anchor transactions
   const baseAnchorBlocks = recentBlocks.filter(
-    (block: any) => (block.hash || block.$hash) === baseAnchor?.hash
+    (block: any) => block.operations?.some((op: any) => op.type === 6)
   );
 
   if (isLoading) {
