@@ -24,8 +24,16 @@ export const keetoolsService = {
         console.error('Error fetching token statistics:', error);
         return null;
       }
+
+      // If edge function returned an error payload, treat as no data
+      if (!data || (data as any).error) {
+        if ((data as any)?.error) {
+          console.warn('Keetools reported error for token statistics:', (data as any).error);
+        }
+        return null;
+      }
       
-      return data;
+      return data as TokenStatistics;
     } catch (error) {
       console.error('Error fetching token statistics:', error);
       return null;

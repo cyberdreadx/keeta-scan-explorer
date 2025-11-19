@@ -45,12 +45,12 @@ serve(async (req) => {
         );
       }
       
-      // For other errors, log and return error
+      // For other errors, log and return error payload with 200 status
       console.error(`Keetools API error: ${response.status} ${response.statusText}`);
       return new Response(
         JSON.stringify({ error: 'Failed to fetch token statistics' }),
         { 
-          status: 500,
+          status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
