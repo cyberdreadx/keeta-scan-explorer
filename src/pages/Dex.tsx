@@ -23,38 +23,56 @@ export default function Dex() {
   const [tokenInput, setTokenInput] = useState("");
 
   const tokenStats = useMemo(() => {
-    if (!transactions) return [];
-
+    // Initialize with all tokens from metadata
     const tokenMap = new Map<string, {
       token: string;
       txCount: number;
       volume: bigint;
-      lastSeen: Date;
+      lastSeen: Date | null;
       addresses: Set<string>;
     }>();
 
-    transactions.forEach((tx: any) => {
-      tx.operations?.forEach((op: any) => {
-        if (op.type === 0 && op.token) { // Send operations
-          const token = op.token;
-          const existing = tokenMap.get(token) || {
-            token,
-            txCount: 0,
-            volume: 0n,
-            lastSeen: new Date(tx.date),
-            addresses: new Set<string>()
-          };
+    // Get all defined tokens
+    const allDefinedTokens = [
+      "keeta_aabiku5vlchcgsxqwj6o4sryvqucaywcb46advac425biaroqzhibaaj7mt6a6i", // BPACA
+      "keeta_aabjew5wmckwg2vuccvu4h2gkildyrp2nlmdocebwfchxmhh7xb6g6y6rzvcxda", // PACA
+      "keeta_aabsuldj4srhjx2rfgzf3b5c55i4vqoo2kmisbc62vd4qd2bmqkmu2mdr4l3zqi", // NDA
+      "keeta_aabwqabactqc3s7lq4khxbpcze7cfux75iuixpevlfsrvwwf3ecdznegnn52m7q", // DRINK
+      "keeta_aabwi6k5rislbhevld3frsfaso2d3v3t7u436clp5fqtsapppyjrzf4deuqyvdi", // AKTA
+      "keeta_ao55q4okjv4hrbo7z7zl3hivrf64og3fpokup5hvt2wfejim5mxzxcykboc3w", // PACA (duplicate)
+      "keeta_anin2xcn2ijmhezrmrzyoabztxc5kq43n3ftr4bziw2unvg46dvncqkbbpc72", // KCHAD
+    ];
 
-          existing.txCount += 1;
-          existing.volume += BigInt(op.amount || '0x0');
-          existing.lastSeen = new Date(tx.date);
-          existing.addresses.add(tx.account);
-          if (op.to) existing.addresses.add(op.to);
-
-          tokenMap.set(token, existing);
-        }
+    // Initialize all tokens with zero values
+    allDefinedTokens.forEach(token => {
+      tokenMap.set(token, {
+        token,
+        txCount: 0,
+        volume: 0n,
+        lastSeen: null,
+        addresses: new Set<string>()
       });
     });
+
+    // Update with actual transaction data if available
+    if (transactions) {
+      transactions.forEach((tx: any) => {
+        tx.operations?.forEach((op: any) => {
+          if (op.type === 0 && op.token) { // Send operations
+            const token = op.token;
+            const existing = tokenMap.get(token);
+            
+            if (existing) {
+              existing.txCount += 1;
+              existing.volume += BigInt(op.amount || '0x0');
+              existing.lastSeen = new Date(tx.date);
+              existing.addresses.add(tx.account);
+              if (op.to) existing.addresses.add(op.to);
+            }
+          }
+        });
+      });
+    }
 
     const allTokens = Array.from(tokenMap.entries())
       .map(([token, stats]) => ({
@@ -63,7 +81,6 @@ export default function Dex() {
         addresses: stats.addresses.size,
         volumeFormatted: formatKeetaAmount(stats.volume.toString(16))
       }))
-      .filter(t => getTokenMetadata(t.token)) // Only show tokens with metadata
       .sort((a, b) => b.txCount - a.txCount);
 
     // Filter by selected tokens if any
@@ -257,7 +274,7 @@ export default function Dex() {
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {timeAgo(stat.lastSeen)}
+                        {stat.lastSeen ? timeAgo(stat.lastSeen) : '-'}
                       </TableCell>
                       <TableCell className="text-right font-semibold text-foreground">
                         {stat.txCount.toLocaleString()}
@@ -271,10 +288,19 @@ export default function Dex() {
                       <TableCell className="text-right">
                         <Badge 
                           variant="outline" 
-                          className="bg-green-500/10 text-green-500 border-green-500/20"
+                          className={stat.txCount > 0 ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-muted/50 text-muted-foreground border-border/50"}
                         >
-                          <TrendingUp className="w-3 h-3 mr-1" />
-                          Active
+                          {stat.txCount > 0 ? (
+                            <>
+                              <TrendingUp className="w-3 h-3 mr-1" />
+                              Active
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-3 h-3 mr-1" />
+                              No Activity
+                            </>
+                          )}
                         </Badge>
                       </TableCell>
                     </TableRow>
