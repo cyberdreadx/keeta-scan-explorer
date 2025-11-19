@@ -33,11 +33,24 @@ serve(async (req) => {
     );
 
     if (!response.ok) {
+      // If token doesn't have statistics (404), return null instead of error
+      if (response.status === 404) {
+        console.log(`No statistics available for token: ${tokenAddress}`);
+        return new Response(
+          JSON.stringify(null),
+          { 
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+      
+      // For other errors, log and return error
       console.error(`Keetools API error: ${response.status} ${response.statusText}`);
       return new Response(
         JSON.stringify({ error: 'Failed to fetch token statistics' }),
         { 
-          status: response.status,
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
