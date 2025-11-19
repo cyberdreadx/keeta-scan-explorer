@@ -14,8 +14,10 @@ import { TrendingUp, Clock, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { TokenRow } from "@/components/TokenRow";
+import { useNavigate } from "react-router-dom";
 
 export default function Dex() {
+  const navigate = useNavigate();
   const [filterTokens, setFilterTokens] = useState<string[]>([]);
   const [tokenInput, setTokenInput] = useState("");
 
@@ -137,7 +139,12 @@ export default function Dex() {
                   </TableRow>
                 ) : (
                   displayTokens.map((token, idx) => (
-                    <TokenRow key={token} token={token} rank={idx + 1} />
+                    <TokenRow 
+                      key={token} 
+                      token={token} 
+                      rank={idx + 1}
+                      onClick={() => navigate(`/token/${token}`)}
+                    />
                   ))
                 )}
               </TableBody>
