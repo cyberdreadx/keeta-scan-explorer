@@ -11,7 +11,7 @@ interface TokenRowProps {
 }
 
 export function TokenRow({ token, rank }: TokenRowProps) {
-  const { data: stats, isLoading } = useTokenStatistics(token);
+  const { data: stats, isLoading, error } = useTokenStatistics(token);
   const metadata = getTokenMetadata(token);
 
   const formatPrice = (price: string) => {
@@ -29,6 +29,9 @@ export function TokenRow({ token, rank }: TokenRowProps) {
 
   const priceChange = stats?.priceChange24h || 0;
   const isPositive = priceChange >= 0;
+  
+  // Check if data is unavailable (404 or other error after loading)
+  const hasNoData = !isLoading && !stats;
 
   return (
     <TableRow className="border-border/30 hover:bg-accent/5 cursor-pointer transition-colors">
@@ -74,7 +77,9 @@ export function TokenRow({ token, rank }: TokenRowProps) {
       <TableCell className="text-right">
         {isLoading ? (
           <span className="text-muted-foreground text-sm">Loading...</span>
-        ) : stats ? (
+        ) : hasNoData ? (
+          <span className="text-muted-foreground text-sm">No data</span>
+        ) : (
           <div>
             <div className="font-semibold text-foreground">
               {formatPrice(stats.currentPrice)} KTA
@@ -83,41 +88,39 @@ export function TokenRow({ token, rank }: TokenRowProps) {
               ${formatPrice(stats.currentPrice)}
             </div>
           </div>
-        ) : (
-          <span className="text-muted-foreground">-</span>
         )}
       </TableCell>
 
       <TableCell className="text-right">
         {isLoading ? (
           <span className="text-muted-foreground text-sm">-</span>
-        ) : stats ? (
+        ) : hasNoData ? (
+          <span className="text-muted-foreground text-sm">-</span>
+        ) : (
           <div className={`font-semibold ${isPositive ? 'text-green-500' : 'text-red-500'} flex items-center justify-end gap-1`}>
             {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
             {isPositive ? '+' : ''}{priceChange.toFixed(2)}%
           </div>
-        ) : (
-          <span className="text-muted-foreground">-</span>
         )}
       </TableCell>
 
       <TableCell className="text-right font-semibold text-foreground">
         {isLoading ? (
           <span className="text-muted-foreground text-sm">-</span>
-        ) : stats ? (
+        ) : hasNoData ? (
+          <span className="text-muted-foreground text-sm">-</span>
+        ) : (
           formatVolume(stats.volume24h)
-        ) : (
-          <span className="text-muted-foreground">-</span>
         )}
       </TableCell>
 
       <TableCell className="text-right font-semibold text-foreground">
         {isLoading ? (
           <span className="text-muted-foreground text-sm">-</span>
-        ) : stats ? (
-          parseInt(stats.holders).toLocaleString()
+        ) : hasNoData ? (
+          <span className="text-muted-foreground text-sm">-</span>
         ) : (
-          <span className="text-muted-foreground">-</span>
+          parseInt(stats.holders).toLocaleString()
         )}
       </TableCell>
 
@@ -126,17 +129,17 @@ export function TokenRow({ token, rank }: TokenRowProps) {
           <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border/50">
             Loading...
           </Badge>
-        ) : stats ? (
+        ) : hasNoData ? (
+          <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border/50">
+            No Data
+          </Badge>
+        ) : (
           <Badge 
             variant="outline" 
             className="bg-green-500/10 text-green-500 border-green-500/20"
           >
             <TrendingUp className="w-3 h-3 mr-1" />
             Active
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border/50">
-            No Data
           </Badge>
         )}
       </TableCell>
