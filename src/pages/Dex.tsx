@@ -11,12 +11,15 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { formatKeetaAddress, formatKeetaAmount } from "@/lib/keetaOperations";
-import { TrendingUp, Clock, Filter } from "lucide-react";
+import { TrendingUp, Clock, Filter, Plus, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Input } from "@/components/ui/input";
 
 export default function Dex() {
   const { data: transactions, isLoading } = useRecentTransactions();
   const [timeFilter, setTimeFilter] = useState<'5m' | '1h' | '6h' | '24h'>('24h');
+  const [filterTokens, setFilterTokens] = useState<string[]>([]);
+  const [tokenInput, setTokenInput] = useState("");
 
   const tokenStats = useMemo(() => {
     if (!transactions) return [];
@@ -52,7 +55,7 @@ export default function Dex() {
       });
     });
 
-    return Array.from(tokenMap.entries())
+    const allTokens = Array.from(tokenMap.entries())
       .map(([token, stats]) => ({
         token,
         ...stats,
@@ -60,7 +63,30 @@ export default function Dex() {
         volumeFormatted: formatKeetaAmount(stats.volume.toString(16))
       }))
       .sort((a, b) => b.txCount - a.txCount);
-  }, [transactions]);
+
+    // Filter by selected tokens if any
+    if (filterTokens.length > 0) {
+      return allTokens.filter(t => filterTokens.includes(t.token));
+    }
+
+    return allTokens;
+  }, [transactions, filterTokens]);
+
+  const addToken = () => {
+    const trimmed = tokenInput.trim();
+    if (trimmed && !filterTokens.includes(trimmed)) {
+      setFilterTokens([...filterTokens, trimmed]);
+      setTokenInput("");
+    }
+  };
+
+  const removeToken = (token: string) => {
+    setFilterTokens(filterTokens.filter(t => t !== token));
+  };
+
+  const clearFilters = () => {
+    setFilterTokens([]);
+  };
 
   const timeAgo = (date: Date) => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -107,10 +133,43 @@ export default function Dex() {
                 {time.toUpperCase()}
               </Button>
             ))}
-            <Button variant="outline" size="sm" className="ml-auto">
-              <Filter className="w-4 h-4 mr-2" />
-              Filters
-            </Button>
+          </div>
+
+          {/* Token Filter Input */}
+          <div className="mt-4 space-y-3">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Paste token address to track (e.g., keeta_an...)"
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addToken()}
+                className="flex-1 font-mono text-sm"
+              />
+              <Button onClick={addToken} size="sm">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Token
+              </Button>
+              {filterTokens.length > 0 && (
+                <Button onClick={clearFilters} variant="outline" size="sm">
+                  Clear All
+                </Button>
+              )}
+            </div>
+
+            {/* Selected Tokens */}
+            {filterTokens.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {filterTokens.map((token) => (
+                  <Badge key={token} variant="secondary" className="gap-2 py-1.5 px-3">
+                    <span className="font-mono text-xs">{formatKeetaAddress(token)}</span>
+                    <X 
+                      className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                      onClick={() => removeToken(token)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
