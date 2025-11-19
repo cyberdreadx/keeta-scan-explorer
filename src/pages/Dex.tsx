@@ -11,7 +11,8 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { formatKeetaAddress, formatKeetaAmount } from "@/lib/keetaOperations";
-import { TrendingUp, Clock, Filter, Plus, X } from "lucide-react";
+import { getTokenMetadata, getTokenSymbol } from "@/lib/tokenMetadata";
+import { TrendingUp, Clock, Filter, Plus, X, Coins } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 
@@ -159,15 +160,18 @@ export default function Dex() {
             {/* Selected Tokens */}
             {filterTokens.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {filterTokens.map((token) => (
-                  <Badge key={token} variant="secondary" className="gap-2 py-1.5 px-3">
-                    <span className="font-mono text-xs">{formatKeetaAddress(token)}</span>
-                    <X 
-                      className="w-3 h-3 cursor-pointer hover:text-destructive" 
-                      onClick={() => removeToken(token)}
-                    />
-                  </Badge>
-                ))}
+                {filterTokens.map((token) => {
+                  const symbol = getTokenSymbol(token);
+                  return (
+                    <Badge key={token} variant="secondary" className="gap-2 py-1.5 px-3">
+                      <span className="font-semibold text-xs">{symbol}</span>
+                      <X 
+                        className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                        onClick={() => removeToken(token)}
+                      />
+                    </Badge>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -208,18 +212,46 @@ export default function Dex() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                            <span className="text-xs font-bold text-primary">
-                              {stat.token.slice(6, 8).toUpperCase()}
-                            </span>
+                          {(() => {
+                            const metadata = getTokenMetadata(stat.token);
+                            return metadata?.imageUrl ? (
+                              <img 
+                                src={metadata.imageUrl} 
+                                alt={metadata.symbol}
+                                className="w-8 h-8 rounded-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                                <Coins className="w-4 h-4 text-primary" />
+                              </div>
+                            );
+                          })()}
+                          <div className="hidden w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                            <Coins className="w-4 h-4 text-primary" />
                           </div>
                           <div>
-                            <div className="font-semibold text-foreground">
-                              {formatKeetaAddress(stat.token)}
-                            </div>
-                            <div className="text-xs text-muted-foreground font-mono">
-                              {stat.token.slice(0, 15)}...
-                            </div>
+                            {(() => {
+                              const metadata = getTokenMetadata(stat.token);
+                              return (
+                                <>
+                                  <div className="font-semibold text-foreground flex items-center gap-2">
+                                    {metadata?.symbol || formatKeetaAddress(stat.token)}
+                                    {metadata?.name && metadata.name !== metadata.symbol && (
+                                      <span className="text-xs text-muted-foreground font-normal">
+                                        {metadata.name}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground font-mono">
+                                    {stat.token.slice(0, 15)}...
+                                  </div>
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                       </TableCell>
