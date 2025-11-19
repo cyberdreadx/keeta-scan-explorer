@@ -52,7 +52,18 @@ export default function Dex() {
 
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Coming Soon Overlay */}
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <TrendingUp className="w-16 h-16 text-muted-foreground/50 mx-auto" />
+          <h2 className="text-3xl font-bold">Coming Soon</h2>
+          <p className="text-muted-foreground max-w-md">
+            Token trading and analytics features are under development
+          </p>
+        </div>
+      </div>
+
       {/* Header Stats */}
       <div className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
