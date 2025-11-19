@@ -8,9 +8,10 @@ import { formatKeetaAmount } from "@/lib/keetaOperations";
 interface TokenRowProps {
   token: string;
   rank: number;
+  onClick?: () => void;
 }
 
-export function TokenRow({ token, rank }: TokenRowProps) {
+export function TokenRow({ token, rank, onClick }: TokenRowProps) {
   const { data: stats, isLoading, error } = useTokenStatistics(token);
   const metadata = getTokenMetadata(token);
 
@@ -34,7 +35,10 @@ export function TokenRow({ token, rank }: TokenRowProps) {
   const hasNoData = !isLoading && !stats;
 
   return (
-    <TableRow className="border-border/30 hover:bg-accent/5 cursor-pointer transition-colors">
+    <TableRow 
+      className="border-border/30 hover:bg-accent/5 cursor-pointer transition-colors"
+      onClick={onClick}
+    >
       <TableCell className="text-muted-foreground">{rank}</TableCell>
       
       <TableCell>

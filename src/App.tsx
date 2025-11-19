@@ -13,6 +13,7 @@ import Representatives from "./pages/Representatives";
 import Statistics from "./pages/Statistics";
 import BaseAnchor from "./pages/BaseAnchor";
 import Dex from "./pages/Dex";
+import TokenDetail from "./pages/TokenDetail";
 import BlockDetail from "./pages/BlockDetail";
 import TransactionDetail from "./pages/TransactionDetail";
 import AddressDetail from "./pages/AddressDetail";
@@ -39,6 +40,7 @@ const App = () => (
                   <Route path="/stats" element={<Statistics />} />
                   <Route path="/base-anchor" element={<BaseAnchor />} />
                   <Route path="/dex" element={<Dex />} />
+                  <Route path="/token/:address" element={<TokenDetail />} />
                   <Route path="/block/:id" element={<BlockDetail />} />
                   <Route path="/tx/:hash" element={<TransactionDetail />} />
                   <Route path="/address/:address" element={<AddressDetail />} />
