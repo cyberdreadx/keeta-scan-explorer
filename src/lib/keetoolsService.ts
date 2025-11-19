@@ -1,4 +1,4 @@
-const KEETOOLS_API_BASE = 'https://api.keetools.org/api';
+import { supabase } from "@/integrations/supabase/client";
 
 export interface TokenStatistics {
   totalSupply: string;
@@ -16,15 +16,16 @@ export interface TokenStatistics {
 export const keetoolsService = {
   async getTokenStatistics(tokenAddress: string): Promise<TokenStatistics | null> {
     try {
-      const response = await fetch(
-        `${KEETOOLS_API_BASE}/tokens/${tokenAddress}/statistics`
-      );
+      const { data, error } = await supabase.functions.invoke('keetools-proxy', {
+        body: { tokenAddress }
+      });
       
-      if (!response.ok) {
+      if (error) {
+        console.error('Error fetching token statistics:', error);
         return null;
       }
       
-      return await response.json();
+      return data;
     } catch (error) {
       console.error('Error fetching token statistics:', error);
       return null;
