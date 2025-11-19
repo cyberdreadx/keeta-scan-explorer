@@ -40,6 +40,24 @@ export default function TokenDetail() {
     );
   }
 
+  const formatLargeNumber = (value: string) => {
+    try {
+      const num = BigInt(value);
+      const divisor = BigInt("1000000000000000000"); // 18 decimals
+      const whole = num / divisor;
+      const remainder = num % divisor;
+      
+      // Format with commas and 2 decimal places
+      const wholeStr = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      const decimalStr = remainder.toString().padStart(18, '0').slice(0, 2);
+      
+      return `${wholeStr}.${decimalStr}`;
+    } catch (error) {
+      console.error('Error formatting number:', error);
+      return '0';
+    }
+  };
+
   const priceChange = stats?.priceChange24h || 0;
   const isPositive = priceChange >= 0;
 
@@ -150,7 +168,7 @@ export default function TokenDetail() {
               <div className="text-xl font-bold text-muted-foreground">Loading...</div>
             ) : stats ? (
               <div className="text-2xl font-bold">
-                {formatKeetaAmount(`0x${BigInt(stats.volume24h).toString(16)}`)}
+                {formatLargeNumber(stats.volume24h)}
               </div>
             ) : (
               <div className="text-xl font-bold text-muted-foreground">No data</div>
@@ -177,19 +195,19 @@ export default function TokenDetail() {
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Total Supply</div>
                 <div className="text-lg font-semibold">
-                  {formatKeetaAmount(`0x${BigInt(stats.totalSupply).toString(16)}`)}
+                  {formatLargeNumber(stats.totalSupply)}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Circulating Supply</div>
                 <div className="text-lg font-semibold">
-                  {formatKeetaAmount(`0x${BigInt(stats.circulatingSupply).toString(16)}`)}
+                  {formatLargeNumber(stats.circulatingSupply)}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Total Volume</div>
                 <div className="text-lg font-semibold">
-                  {formatKeetaAmount(`0x${BigInt(stats.volumeTotal).toString(16)}`)}
+                  {formatLargeNumber(stats.volumeTotal)}
                 </div>
               </div>
             </div>

@@ -24,8 +24,17 @@ export function TokenRow({ token, rank, onClick }: TokenRowProps) {
   };
 
   const formatVolume = (volume: string) => {
-    const num = BigInt(volume);
-    return formatKeetaAmount(`0x${num.toString(16)}`);
+    try {
+      const num = BigInt(volume);
+      const divisor = BigInt("1000000000000000000"); // 18 decimals
+      const whole = num / divisor;
+      
+      // Format with commas
+      return whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    } catch (error) {
+      console.error('Error formatting volume:', error);
+      return '0';
+    }
   };
 
   const priceChange = stats?.priceChange24h || 0;
