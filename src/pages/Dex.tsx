@@ -63,6 +63,7 @@ export default function Dex() {
         addresses: stats.addresses.size,
         volumeFormatted: formatKeetaAmount(stats.volume.toString(16))
       }))
+      .filter(t => getTokenMetadata(t.token)) // Only show tokens with metadata
       .sort((a, b) => b.txCount - a.txCount);
 
     // Filter by selected tokens if any
