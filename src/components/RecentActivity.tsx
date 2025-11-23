@@ -1,10 +1,10 @@
 import { useRecentTransactions } from "@/hooks/useKeetaData";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { ExternalLink, Coins, Anchor, ArrowRightLeft } from "lucide-react";
+import { ExternalLink, Coins, Anchor, ArrowRightLeft, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getOperationType, formatKeetaAddress, formatKeetaAmount, isAtomicSwap, getSwapAmounts } from "@/lib/keetaOperations";
-import { formatAddressWithLabel, getAddressType } from "@/lib/addressLabels";
+import { formatAddressWithLabel, getAddressType, isBaseAnchorDeposit, isBaseAnchorWithdrawal } from "@/lib/addressLabels";
 
 export const RecentActivity = () => {
   const { data: transactions, isLoading } = useRecentTransactions();
@@ -66,6 +66,8 @@ export const RecentActivity = () => {
           const hash = tx.$hash || tx.hash || "N/A";
           const isSwap = isAtomicSwap(tx.operations);
           const swapAmounts = isSwap ? getSwapAmounts(tx.operations) : null;
+          const isDeposit = isBaseAnchorDeposit(tx);
+          const isWithdrawal = isBaseAnchorWithdrawal(tx);
           
           return (
             <Card 
@@ -78,6 +80,10 @@ export const RecentActivity = () => {
                 <div className="flex items-center gap-2 mb-3">
                   {isSwap ? (
                     <ArrowRightLeft className="w-5 h-5 text-blue-500" />
+                  ) : isDeposit ? (
+                    <ArrowDownToLine className="w-5 h-5 text-green-500" />
+                  ) : isWithdrawal ? (
+                    <ArrowUpFromLine className="w-5 h-5 text-orange-500" />
                   ) : (
                     tx.operations?.[0] && (() => {
                       const opType = getOperationType(tx.operations[0].type);
@@ -86,7 +92,7 @@ export const RecentActivity = () => {
                     })()
                   )}
                   <h3 className="text-lg font-semibold text-foreground">
-                    {isSwap ? 'Atomic Swap' : (tx.purpose === 1 ? 'Admin Transaction' : 'Transaction')}
+                    {isSwap ? 'Atomic Swap' : isDeposit ? 'Base Anchor Deposit' : isWithdrawal ? 'Base Anchor Withdrawal' : (tx.purpose === 1 ? 'Admin Transaction' : 'Transaction')}
                   </h3>
                   <span className="text-sm text-muted-foreground ml-auto">
                     {new Date(tx.date).toLocaleString()}
@@ -97,6 +103,14 @@ export const RecentActivity = () => {
                 {isSwap && swapAmounts ? (
                   <p className="text-sm text-muted-foreground mb-4">
                     {swapAmounts.from} → {swapAmounts.to}
+                  </p>
+                ) : isDeposit ? (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {tx.operations?.[0]?.amount && formatKeetaAmount(tx.operations[0].amount)} KTA to Base Anchor
+                  </p>
+                ) : isWithdrawal ? (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {tx.operations?.[0]?.amount && formatKeetaAmount(tx.operations[0].amount)} KTA from Base Anchor
                   </p>
                 ) : (
                   <p className="text-sm text-muted-foreground mb-4">

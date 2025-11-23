@@ -6,6 +6,9 @@ export interface AddressLabel {
   icon?: string;
 }
 
+// Base Anchor address constant for easy reference
+export const BASE_ANCHOR_ADDRESS = "keeta_aabal6jl7dgl3xa6dkzehkbzmzuch3h5yjbmkijyo6vra6xjgzrpfv7gftdkgoy";
+
 export const ADDRESS_LABELS: AddressLabel[] = [
   {
     address: "keeta_aabkv4rnog7herzxncgs6nfszbwf4fvbraukrnapcoanxuijcujwqhkydub5kvq",
@@ -18,7 +21,7 @@ export const ADDRESS_LABELS: AddressLabel[] = [
     type: "storage",
   },
   {
-    address: "keeta_aabal6jl7dgl3xa6dkzehkbzmzuch3h5yjbmkijyo6vra6xjgzrpfv7gftdkgoy",
+    address: BASE_ANCHOR_ADDRESS,
     name: "Base Anchor",
     type: "anchor",
   },
@@ -51,4 +54,19 @@ export function formatAddressWithLabel(address: string): string {
   // Return shortened address if no label
   if (!address) return "N/A";
   return `${address.substring(0, 10)}...${address.substring(address.length - 6)}`;
+}
+
+export function isBaseAnchorDeposit(tx: any): boolean {
+  // Check if this is a regular transaction (purpose 0) where someone is sending TO the base anchor
+  if (tx.purpose !== 0) return false;
+  
+  // Check if any operation is sending to the base anchor address
+  return tx.operations?.some((op: any) => 
+    op.type === 0 && op.to === BASE_ANCHOR_ADDRESS
+  ) || false;
+}
+
+export function isBaseAnchorWithdrawal(tx: any): boolean {
+  // Check if this is an admin transaction (purpose 1) FROM the base anchor
+  return tx.purpose === 1 && tx.account === BASE_ANCHOR_ADDRESS;
 }
