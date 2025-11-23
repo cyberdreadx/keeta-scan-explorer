@@ -11,6 +11,7 @@ import { OperationsPerBlockChart } from "@/components/charts/OperationsPerBlockC
 import { OperationTypesChart } from "@/components/charts/OperationTypesChart";
 import { PriceHistoryChart } from "@/components/charts/PriceHistoryChart";
 import { LiveIndicator } from "@/components/LiveIndicator";
+import { getOperationType } from "@/lib/keetaOperations";
 
 const Home = () => {
   const { data: networkStats } = useNetworkStats();
@@ -35,28 +36,18 @@ const Home = () => {
       setTpsData(tpsTimeline);
 
       // Count operation types
-      const opCounts: { [key: string]: number } = {};
+      const opCounts: { [key: number]: number } = {};
       recentBlocks.forEach((block: any) => {
         block.operations?.forEach((op: any) => {
-          const type = op.type?.toString() || 'unknown';
-          opCounts[type] = (opCounts[type] || 0) + 1;
+          const type = typeof op.type === 'number' ? op.type : parseInt(op.type);
+          if (!isNaN(type)) {
+            opCounts[type] = (opCounts[type] || 0) + 1;
+          }
         });
       });
 
-      const opTypeNames: { [key: string]: string } = {
-        '0': 'Send',
-        '1': 'Receive',
-        '2': 'Change Rep',
-        '3': 'Admin Anchor',
-        '4': 'Set Info',
-        '5': 'Admin Supply',
-        '6': 'Admin Burn',
-        '7': 'Admin Init',
-        '8': 'Admin Swap'
-      };
-
       const pieData = Object.entries(opCounts).map(([type, count]) => ({
-        name: opTypeNames[type] || `Type ${type}`,
+        name: getOperationType(parseInt(type)).name,
         value: count
       }));
       setOperationData(pieData);
