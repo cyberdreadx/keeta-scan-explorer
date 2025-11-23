@@ -13,6 +13,7 @@ export const useKeetaPriceHistory = (days: number = 7) => {
   return useQuery({
     queryKey: ['keeta-price-history', days],
     queryFn: () => coingeckoService.getKeetaPriceHistory(days),
-    refetchInterval: 300000, // Refetch every 5 minutes
+    refetchInterval: 600000, // Refetch every 10 minutes to avoid rate limits
+    retry: 1,
   });
 };
