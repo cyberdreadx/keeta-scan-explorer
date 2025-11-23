@@ -5,18 +5,15 @@ import LatestTransactions from "@/components/LatestTransactions";
 import RecentActivity from "@/components/RecentActivity";
 import { Box, TrendingDown, Shield, Network } from "lucide-react";
 import { useNetworkStats, useRecentBlocks } from "@/hooks/useKeetaData";
-import { useTokenStatistics } from "@/hooks/useTokenStatistics";
+import { useKeetaPrice } from "@/hooks/useCoinGecko";
 import { useEffect, useState } from "react";
 import { OperationsPerBlockChart } from "@/components/charts/OperationsPerBlockChart";
 import { OperationTypesChart } from "@/components/charts/OperationTypesChart";
 
-// Native KTA token address
-const KTA_TOKEN_ADDRESS = "keeta_anqdilpazdekdu4acw65fj7smltcp26wbrildkqtszqvverljpwpezmd44ssg";
-
 const Home = () => {
   const { data: networkStats } = useNetworkStats();
   const { data: recentBlocks = [] } = useRecentBlocks();
-  const { data: ktaStats } = useTokenStatistics(KTA_TOKEN_ADDRESS);
+  const { data: ktaPrice } = useKeetaPrice();
   const [tpsData, setTpsData] = useState<any[]>([]);
   const [operationData, setOperationData] = useState<any[]>([]);
 
@@ -73,9 +70,9 @@ const Home = () => {
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           <StatsCard
             title="KTA Price"
-            value={ktaStats?.currentPrice ? `$${ktaStats.currentPrice}` : "$0.00"}
+            value={ktaPrice?.currentPrice ? `$${ktaPrice.currentPrice}` : "$0.00"}
             icon={TrendingDown}
-            change={ktaStats?.priceChange24h ? `${ktaStats.priceChange24h > 0 ? '+' : ''}${ktaStats.priceChange24h.toFixed(2)}% (24h)` : "N/A"}
+            change={ktaPrice?.priceChange24h ? `${ktaPrice.priceChange24h > 0 ? '+' : ''}${ktaPrice.priceChange24h.toFixed(2)}% (24h)` : "N/A"}
           />
           <StatsCard
             title="Representatives"
