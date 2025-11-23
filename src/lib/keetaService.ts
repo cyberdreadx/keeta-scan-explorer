@@ -191,28 +191,71 @@ export const keetaService = {
     }
   },
 
-  // Get base anchor information
+  // Get base anchor information, trying multiple representatives and endpoints
   async getBaseAnchor() {
     try {
-      const response = await fetch('https://rep4.main.network.api.keeta.com/api/node/stats');
-      const data = await response.json();
-      console.log('📍 Base Anchor API Response:', data);
-      
-      // Extract base anchor info from node stats
-      const baseAnchor = data.ledger?.baseAnchor;
-      
-      if (!baseAnchor) {
-        console.warn('No base anchor found in node stats');
+      const representatives = await this.getRepresentatives();
+      const repsWithApi = representatives.filter(
+        (r) => r.endpoints && r.endpoints.api
+      );
+
+      if (!repsWithApi.length) {
+        console.warn("No representatives with API endpoints available for base anchor");
         return null;
       }
-      
-      return {
-        hash: baseAnchor,
-        height: data.ledger?.baseAnchorHeight || 0,
-        timestamp: data.ledger?.baseAnchorTimestamp || null,
-      };
+
+      for (const rep of repsWithApi) {
+        const baseUrl = rep.endpoints.api;
+        const urls = [
+          `${baseUrl}/node/ledger/info`,
+          `${baseUrl}/node/info`,
+        ];
+
+        for (const url of urls) {
+          try {
+            const response = await fetch(url);
+            if (!response.ok) continue;
+
+            const data = await response.json();
+            console.log("📍 Base Anchor API Response from", url, data);
+
+            const ledger = data.ledger || data;
+            const hash =
+              ledger.baseAnchor?.hash ||
+              ledger.baseAnchor ||
+              ledger.base_anchor?.hash ||
+              ledger.base_anchor ||
+              ledger.anchor?.hash ||
+              ledger.anchor;
+            const height =
+              ledger.baseAnchorHeight ||
+              ledger.base_anchor_height ||
+              ledger.anchorHeight ||
+              0;
+            const timestamp =
+              ledger.baseAnchorTimestamp ||
+              ledger.base_anchor_timestamp ||
+              ledger.anchorTimestamp ||
+              null;
+
+            if (hash) {
+              return {
+                hash,
+                height,
+                timestamp,
+              };
+            }
+          } catch (error) {
+            console.warn("Base anchor request failed for", url, error);
+            continue;
+          }
+        }
+      }
+
+      console.warn("No base anchor information found from any representative");
+      return null;
     } catch (error) {
-      console.error('❌ Error fetching base anchor:', error);
+      console.error("❌ Error fetching base anchor:", error);
       return null;
     }
   },
