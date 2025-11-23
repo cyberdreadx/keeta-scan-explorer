@@ -1,4 +1,4 @@
-import { Home, Box, Send, User, BarChart3, Anchor, TrendingUp } from "lucide-react";
+import { Home, Box, Send, User, BarChart3, Anchor, TrendingUp, Radio } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 import {
@@ -15,6 +15,7 @@ import {
 
 const menuItems = [
   { title: "Home", url: "/", icon: Home },
+  { title: "Network Viz", url: "/network-viz", icon: Radio },
   { title: "Blocks", url: "/blocks", icon: Box },
   { title: "Transactions", url: "/transactions", icon: Send },
   { title: "Representatives", url: "/representatives", icon: User },
