@@ -194,33 +194,22 @@ export const keetaService = {
   // Get base anchor information
   async getBaseAnchor() {
     try {
-      const representatives = await this.getRepresentatives();
-      const rep = representatives.find(r => r.weight !== "0x0") || representatives[0];
-      
-      if (!rep) {
-        throw new Error('No representatives available');
-      }
-
-      // Try the ledger info endpoint
-      let response = await fetch(`${rep.endpoints.api}/node/ledger/info`);
-      
-      if (!response.ok) {
-        // Fallback to node info
-        response = await fetch(`${rep.endpoints.api}/node/info`);
-      }
-      
+      const response = await fetch('https://rep4.main.network.api.keeta.com/api/node/stats');
       const data = await response.json();
       console.log('📍 Base Anchor API Response:', data);
       
-      // Try different possible field names
-      const hash = data.baseAnchor?.hash || data.baseAnchor || data.base_anchor?.hash || data.base_anchor || data.anchor?.hash || data.anchor;
-      const height = data.baseAnchorHeight || data.base_anchor_height || data.anchorHeight || 0;
-      const timestamp = data.baseAnchorTimestamp || data.base_anchor_timestamp || data.anchorTimestamp || Date.now() / 1000;
+      // Extract base anchor info from node stats
+      const baseAnchor = data.ledger?.baseAnchor;
+      
+      if (!baseAnchor) {
+        console.warn('No base anchor found in node stats');
+        return null;
+      }
       
       return {
-        hash: hash || 'N/A',
-        height,
-        timestamp,
+        hash: baseAnchor,
+        height: data.ledger?.baseAnchorHeight || 0,
+        timestamp: data.ledger?.baseAnchorTimestamp || null,
       };
     } catch (error) {
       console.error('❌ Error fetching base anchor:', error);
