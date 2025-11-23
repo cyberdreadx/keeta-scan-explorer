@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { CyberBackground } from "@/components/CyberBackground";
 import Home from "./pages/Home";
 import Blocks from "./pages/Blocks";
 import Transactions from "./pages/Transactions";
@@ -31,8 +32,9 @@ const App = () => (
         <BrowserRouter>
           <SidebarProvider>
             <div className="flex min-h-screen w-full overflow-hidden">
+              <CyberBackground />
               <AppSidebar />
-              <main className="flex-1 overflow-x-hidden">
+              <main className="flex-1 overflow-x-hidden relative z-10">
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/blocks" element={<Blocks />} />

@@ -117,6 +117,56 @@ All colors MUST be HSL.
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  .cyber {
+    /* Cyber/Tech Theme - Ironman inspired */
+    --background: 0 0% 0%;
+    --foreground: 180 100% 90%;
+
+    --card: 217 33% 7%;
+    --card-foreground: 180 100% 90%;
+
+    --popover: 217 33% 7%;
+    --popover-foreground: 180 100% 90%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 91% 70%;
+
+    --secondary: 280 70% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 217 33% 12%;
+    --muted-foreground: 180 20% 60%;
+
+    --accent: 180 100% 50%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 50% 20%;
+    --input: 217 50% 15%;
+    --ring: 180 100% 50%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(180 100% 50%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60% / 0.2), hsl(180 100% 50% / 0.2));
+    
+    --shadow-glow: 0 0 60px hsl(180 100% 50% / 0.4);
+    --shadow-card: 0 4px 20px hsl(217 91% 60% / 0.3);
+    
+    --sidebar-background: 217 33% 5%;
+    --sidebar-foreground: 180 100% 90%;
+    --sidebar-primary: 180 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 217 50% 15%;
+    --sidebar-accent-foreground: 180 100% 90%;
+    --sidebar-border: 217 50% 12%;
+    --sidebar-ring: 180 100% 50%;
+  }
 }
 
 @layer base {
