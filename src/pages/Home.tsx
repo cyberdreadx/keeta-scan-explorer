@@ -5,15 +5,18 @@ import LatestTransactions from "@/components/LatestTransactions";
 import RecentActivity from "@/components/RecentActivity";
 import { Box, TrendingDown, Shield, Network } from "lucide-react";
 import { useNetworkStats, useRecentBlocks } from "@/hooks/useKeetaData";
-import { useKeetaPrice } from "@/hooks/useCoinGecko";
+import { useKeetaPrice, useKeetaPriceHistory } from "@/hooks/useCoinGecko";
 import { useEffect, useState } from "react";
 import { OperationsPerBlockChart } from "@/components/charts/OperationsPerBlockChart";
 import { OperationTypesChart } from "@/components/charts/OperationTypesChart";
+import { PriceHistoryChart } from "@/components/charts/PriceHistoryChart";
+import { LiveIndicator } from "@/components/LiveIndicator";
 
 const Home = () => {
   const { data: networkStats } = useNetworkStats();
   const { data: recentBlocks = [] } = useRecentBlocks();
   const { data: ktaPrice } = useKeetaPrice();
+  const { data: priceHistory = [] } = useKeetaPriceHistory(7);
   const [tpsData, setTpsData] = useState<any[]>([]);
   const [operationData, setOperationData] = useState<any[]>([]);
 
@@ -67,6 +70,11 @@ const Home = () => {
       {/* Stats Section */}
       <section className="w-full max-w-[100vw] overflow-x-hidden">
         <div className="container mx-auto px-4 py-8">
+          {/* Live Indicator */}
+          <div className="mb-6">
+            <LiveIndicator lastUpdated={ktaPrice?.lastUpdated} isLive={true} />
+          </div>
+
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           <StatsCard
             title="KTA Price"
@@ -93,6 +101,11 @@ const Home = () => {
             subtitle="Total Transactions on Network"
           />
         </div>
+
+          {/* Price History Chart */}
+          <div className="mb-8">
+            <PriceHistoryChart data={priceHistory} height={300} />
+          </div>
 
           {/* Charts Preview */}
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-8">
