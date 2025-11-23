@@ -135,9 +135,9 @@ export function isAtomicSwap(operations: any[]): boolean {
   if (!operations || operations.length < 2) return false;
   
   const hasSend = operations.some(op => op.type === 0);
-  const hasReceive = operations.some(op => op.type === 1);
+  const hasConditionalReceive = operations.some(op => op.type === 7); // Conditional Receive for swaps
   
-  return hasSend && hasReceive;
+  return hasSend && hasConditionalReceive;
 }
 
 export function getSwapAmounts(operations: any[]): { from: string; to: string } | null {
