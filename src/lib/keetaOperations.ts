@@ -9,6 +9,7 @@ import {
   GitBranch,
   LucideIcon 
 } from 'lucide-react';
+import { getTokenSymbol } from './tokenMetadata';
 
 export interface OperationType {
   name: string;
@@ -115,7 +116,16 @@ export function formatKeetaAddress(address: string, length: number = 10): string
 export function formatKeetaAmount(hexAmount: string, decimals: number = 18): string {
   try {
     const amount = parseInt(hexAmount, 16) / Math.pow(10, decimals);
-    return amount.toFixed(3);
+    // Format with appropriate decimals based on size
+    if (amount >= 1000000) {
+      return (amount / 1000000).toFixed(2) + 'M';
+    } else if (amount >= 1000) {
+      return (amount / 1000).toFixed(2) + 'K';
+    } else if (amount >= 1) {
+      return amount.toFixed(3);
+    } else {
+      return amount.toFixed(6);
+    }
   } catch {
     return '0';
   }
@@ -134,12 +144,15 @@ export function getSwapAmounts(operations: any[]): { from: string; to: string } 
   if (!operations || operations.length < 2) return null;
   
   const sendOp = operations.find(op => op.type === 0);
-  const receiveOp = operations.find(op => op.type === 1);
+  const receiveOp = operations.find(op => op.type === 7); // Conditional Receive for swaps
   
   if (!sendOp || !receiveOp) return null;
   
+  const sendToken = getTokenSymbol(sendOp.token || 'keeta_anqdilpazdekdu4acw65fj7smltcp26wbrildkqtszqvverljpwpezmd44ssg');
+  const receiveToken = getTokenSymbol(receiveOp.token || 'keeta_anqdilpazdekdu4acw65fj7smltcp26wbrildkqtszqvverljpwpezmd44ssg');
+  
   return {
-    from: formatKeetaAmount(sendOp.amount || '0x0'),
-    to: formatKeetaAmount(receiveOp.amount || '0x0')
+    from: `${formatKeetaAmount(sendOp.amount || '0x0')} ${sendToken}`,
+    to: `${formatKeetaAmount(receiveOp.amount || '0x0')} ${receiveToken}`
   };
 }

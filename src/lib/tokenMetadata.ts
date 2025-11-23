@@ -9,6 +9,22 @@ export interface TokenMetadata {
 
 export const TOKEN_METADATA: TokenMetadata[] = [
   {
+    "address": "keeta_anqdilpazdekdu4acw65fj7smltcp26wbrildkqtszqvverljpwpezmd44ssg",
+    "name": "Keeta",
+    "symbol": "KTA",
+    "description": "Native Keeta Token",
+    "imageUrl": "",
+    "updatedAt": 1735689600000
+  },
+  {
+    "address": "keeta_amlx64uigzckvbecjuqjxucvkjpk3fqjr5h3cixsfdvjcfh42yd3zc3m746jxpy",
+    "name": "Murphy",
+    "symbol": "MURF",
+    "description": "Murphy Token",
+    "imageUrl": "",
+    "updatedAt": 1763935600000
+  },
+  {
     "address": "keeta_aabiku5vlchcgsxqwj6o4sryvqucaywcb46advac425biaroqzhibaaj7mt6a6i",
     "name": "Baby Paca",
     "symbol": "BPACA",
@@ -73,6 +89,11 @@ export function getTokenMetadata(address: string): TokenMetadata | undefined {
 }
 
 export function getTokenSymbol(address: string): string {
+  // Check if it's the native KTA token
+  if (address === "keeta_anqdilpazdekdu4acw65fj7smltcp26wbrildkqtszqvverljpwpezmd44ssg") {
+    return "KTA";
+  }
+  
   const metadata = getTokenMetadata(address);
   return metadata?.symbol || formatKeetaAddress(address);
 }
