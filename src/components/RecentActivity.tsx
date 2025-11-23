@@ -4,6 +4,7 @@ import { Badge } from "./ui/badge";
 import { ExternalLink, Coins, Anchor, ArrowRightLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getOperationType, formatKeetaAddress, formatKeetaAmount, isAtomicSwap, getSwapAmounts } from "@/lib/keetaOperations";
+import { formatAddressWithLabel, getAddressType } from "@/lib/addressLabels";
 
 export const RecentActivity = () => {
   const { data: transactions, isLoading } = useRecentTransactions();
@@ -99,7 +100,7 @@ export const RecentActivity = () => {
                   </p>
                 ) : (
                   <p className="text-sm text-muted-foreground mb-4">
-                    {tx.operations?.[0]?.amount && formatKeetaAmount(tx.operations[0].amount)} KTA to {formatKeetaAddress(tx.operations[0].to || tx.account)}
+                    {tx.operations?.[0]?.amount && formatKeetaAmount(tx.operations[0].amount)} KTA to {formatAddressWithLabel(tx.operations[0].to || tx.account)}
                   </p>
                 )}
 
@@ -177,12 +178,12 @@ export const RecentActivity = () => {
                           <>
                             <Anchor className="w-4 h-4 text-blue-500" />
                             <span className="text-sm font-medium text-foreground">
-                              {formatKeetaAddress(tx.operations?.[0]?.to || tx.account)}
+                              {formatAddressWithLabel(tx.operations?.[0]?.to || tx.account)}
                             </span>
                           </>
                         ) : (
                           <span className="text-sm font-medium text-foreground font-mono">
-                            {formatKeetaAddress(tx.operations?.[0]?.to || tx.account)}
+                            {formatAddressWithLabel(tx.operations?.[0]?.to || tx.account)}
                           </span>
                         )}
                         <button
