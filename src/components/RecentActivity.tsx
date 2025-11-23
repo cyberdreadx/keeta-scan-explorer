@@ -95,7 +95,7 @@ export const RecentActivity = () => {
                 {/* Description */}
                 {isSwap && swapAmounts ? (
                   <p className="text-sm text-muted-foreground mb-4">
-                    {swapAmounts.from} KTA - {swapAmounts.to} KTA
+                    {swapAmounts.from} → {swapAmounts.to}
                   </p>
                 ) : (
                   <p className="text-sm text-muted-foreground mb-4">
