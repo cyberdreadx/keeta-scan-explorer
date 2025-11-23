@@ -9,7 +9,7 @@ import {
   GitBranch,
   LucideIcon 
 } from 'lucide-react';
-import { getTokenSymbol } from './tokenMetadata';
+import { getTokenSymbol, getTokenDecimals } from './tokenMetadata';
 
 export interface OperationType {
   name: string;
@@ -113,8 +113,9 @@ export function formatKeetaAddress(address: string, length: number = 10): string
   return `${address.slice(0, length)}...${address.slice(-length)}`;
 }
 
-export function formatKeetaAmount(hexAmount: string, decimals: number = 18): string {
+export function formatKeetaAmount(hexAmount: string, tokenAddress?: string): string {
   try {
+    const decimals = tokenAddress ? getTokenDecimals(tokenAddress) : 18;
     const amount = parseInt(hexAmount, 16) / Math.pow(10, decimals);
     // Format with appropriate decimals based on size
     if (amount >= 1000000) {
@@ -148,11 +149,14 @@ export function getSwapAmounts(operations: any[]): { from: string; to: string } 
   
   if (!sendOp || !receiveOp) return null;
   
-  const sendToken = getTokenSymbol(sendOp.token || 'keeta_anqdilpazdekdu4acw65fj7smltcp26wbrildkqtszqvverljpwpezmd44ssg');
-  const receiveToken = getTokenSymbol(receiveOp.token || 'keeta_anqdilpazdekdu4acw65fj7smltcp26wbrildkqtszqvverljpwpezmd44ssg');
+  const sendTokenAddress = sendOp.token || 'keeta_anqdilpazdekdu4acw65fj7smltcp26wbrildkqtszqvverljpwpezmd44ssg';
+  const receiveTokenAddress = receiveOp.token || 'keeta_anqdilpazdekdu4acw65fj7smltcp26wbrildkqtszqvverljpwpezmd44ssg';
+  
+  const sendToken = getTokenSymbol(sendTokenAddress);
+  const receiveToken = getTokenSymbol(receiveTokenAddress);
   
   return {
-    from: `${formatKeetaAmount(sendOp.amount || '0x0')} ${sendToken}`,
-    to: `${formatKeetaAmount(receiveOp.amount || '0x0')} ${receiveToken}`
+    from: `${formatKeetaAmount(sendOp.amount || '0x0', sendTokenAddress)} ${sendToken}`,
+    to: `${formatKeetaAmount(receiveOp.amount || '0x0', receiveTokenAddress)} ${receiveToken}`
   };
 }
