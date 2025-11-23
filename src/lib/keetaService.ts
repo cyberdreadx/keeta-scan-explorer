@@ -26,6 +26,7 @@ export interface Block {
   date: string;
   signature: string;
   $opening?: boolean;
+  purpose?: number;
 }
 
 export interface VoteStaple {

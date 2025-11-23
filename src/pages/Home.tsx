@@ -81,24 +81,28 @@ const Home = () => {
             value={ktaPrice?.currentPrice ? `$${ktaPrice.currentPrice}` : "$0.00"}
             icon={TrendingDown}
             change={ktaPrice?.priceChange24h ? `${ktaPrice.priceChange24h > 0 ? '+' : ''}${ktaPrice.priceChange24h.toFixed(2)}% (24h)` : "N/A"}
+            isLoading={!ktaPrice}
           />
           <StatsCard
             title="Representatives"
             value={networkStats?.activeRepresentatives?.toString() || "0"}
             icon={Box}
             subtitle="Active Representatives on Network"
+            isLoading={!networkStats}
           />
           <StatsCard
             title="Blocks"
             value={networkStats?.nodeStats?.ledger?.blockCount?.toLocaleString() || "0"}
             icon={Shield}
             subtitle="Total Blocks on Network"
+            isLoading={!networkStats}
           />
           <StatsCard
             title="Transactions"
             value={networkStats?.nodeStats?.ledger?.transactionCount?.toLocaleString() || "0"}
             icon={Network}
             subtitle="Total Transactions on Network"
+            isLoading={!networkStats}
           />
         </div>
 
