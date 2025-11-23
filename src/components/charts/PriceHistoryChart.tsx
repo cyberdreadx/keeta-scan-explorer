@@ -35,8 +35,10 @@ export const PriceHistoryChart = ({ data, height = 300 }: PriceHistoryChartProps
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
-          <div className="flex items-center justify-center" style={{ height: `${height}px` }}>
-            <p className="text-muted-foreground">No price history data available</p>
+          <div className="flex flex-col items-center justify-center gap-2" style={{ height: `${height}px` }}>
+            <TrendingUp className="h-12 w-12 text-muted-foreground/50" />
+            <p className="text-muted-foreground font-medium">Price History Temporarily Unavailable</p>
+            <p className="text-xs text-muted-foreground">CoinGecko API rate limit reached. Chart will refresh in a few minutes.</p>
           </div>
         ) : (
           <ChartContainer config={chartConfig} className="w-full" style={{ height: `${height}px` }}>
