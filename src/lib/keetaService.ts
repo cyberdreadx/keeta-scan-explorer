@@ -153,20 +153,27 @@ export const keetaService = {
     }
   },
 
-  // Get account info with full transaction history
+  // Get account info with full transaction history and balances
   async getAccountInfo(address: string) {
     try {
       const representatives = await this.getRepresentatives();
       const rep = representatives.find(r => r.weight !== "0x0") || representatives[0];
       
-      const response = await fetch(
+      // Fetch account info (includes balances)
+      const infoResponse = await fetch(
+        `${rep.endpoints.api}/node/ledger/account/${address}`
+      );
+      const accountInfo = await infoResponse.json();
+      
+      // Fetch transaction history
+      const historyResponse = await fetch(
         `${rep.endpoints.api}/node/ledger/account/${address}/history?limit=100`
       );
-      const data = await response.json();
+      const historyData = await historyResponse.json();
       
       const allBlocks: Block[] = [];
-      if (data.history) {
-        data.history.forEach((item: VoteStaple) => {
+      if (historyData.history) {
+        historyData.history.forEach((item: VoteStaple) => {
           if (item.voteStaple?.blocks) {
             allBlocks.push(...item.voteStaple.blocks);
           }
@@ -178,8 +185,12 @@ export const keetaService = {
         block.operations?.some((op: any) => op.to === address)
       );
       
+      // Extract balances from account info
+      const balances = accountInfo.balances || {};
+      
       return {
         address,
+        balances,
         transactions: addressTransactions.sort((a, b) => 
           new Date(b.date).getTime() - new Date(a.date).getTime()
         ),
