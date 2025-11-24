@@ -34,11 +34,11 @@ serve(async (req) => {
       );
     }
 
-    // Using Basescan API to fetch transactions for the Base network
+    // Using Basescan API V2 to fetch transactions for the Base network
     const apiKey = Deno.env.get('BASESCAN_API_KEY');
     console.log('Fetching transactions for address:', address);
     
-    const basescanUrl = `https://api.basescan.org/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&page=1&offset=20&apikey=${apiKey}`;
+    const basescanUrl = `https://api.basescan.org/v2/api?chainid=8453&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&page=1&offset=20&apikey=${apiKey}`;
     
     const response = await fetch(basescanUrl);
     const data = await response.json();
