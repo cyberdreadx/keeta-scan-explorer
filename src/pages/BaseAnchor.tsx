@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useRecentBlocks } from "@/hooks/useKeetaData";
+import { useBaseTransactions } from "@/hooks/useBaseTransactions";
 import { Anchor, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatKeetaAmount } from "@/lib/keetaOperations";
@@ -20,9 +21,10 @@ const SUPPORTED_ASSETS = [
 
 const BaseAnchor = () => {
   const { data: recentBlocks = [] } = useRecentBlocks();
+  const { data: baseTransactions = [], isLoading: isLoadingBase } = useBaseTransactions(BASE_EVM_ADDRESS);
 
-  // Filter blocks that involve the base anchor account
-  const bridgeTransactions = recentBlocks.filter((block: any) => 
+  // Filter blocks that involve the base anchor account (Keeta side)
+  const keetaBridgeTransactions = recentBlocks.filter((block: any) => 
     block.account === BASE_ANCHOR_ADDRESS || 
     block.operations?.some((op: any) => op.to === BASE_ANCHOR_ADDRESS || op.from === BASE_ANCHOR_ADDRESS)
   );
@@ -101,16 +103,16 @@ const BaseAnchor = () => {
         </Card>
       </div>
 
-      {/* Transactions */}
+      {/* Keeta Network Transactions */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Bridge Transactions</CardTitle>
+          <CardTitle>Recent Keeta Bridge Transactions</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Cross-chain transactions facilitated by the Keeta Base Anchor
+            Transactions on the Keeta network involving the Base Anchor
           </p>
         </CardHeader>
         <CardContent>
-          {bridgeTransactions.length > 0 ? (
+          {keetaBridgeTransactions.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -122,7 +124,7 @@ const BaseAnchor = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bridgeTransactions.map((block: any) => {
+                  {keetaBridgeTransactions.map((block: any) => {
                     const mainOp = block.operations?.[0];
                     const token = mainOp?.token;
                     const metadata = getTokenMetadata(token);
@@ -165,7 +167,97 @@ const BaseAnchor = () => {
             </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              No recent bridge transactions found
+              No recent Keeta bridge transactions found
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Base Network Transactions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Base Bridge Transactions</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Transactions on the Base EVM network involving the Base Anchor
+          </p>
+        </CardHeader>
+        <CardContent>
+          {isLoadingBase ? (
+            <div className="text-center py-12 text-muted-foreground">
+              Loading Base transactions...
+            </div>
+          ) : baseTransactions.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tx Hash</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>From</TableHead>
+                    <TableHead>To</TableHead>
+                    <TableHead>Value (ETH)</TableHead>
+                    <TableHead>Age</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {baseTransactions.slice(0, 10).map((tx: any) => (
+                    <TableRow key={tx.hash}>
+                      <TableCell>
+                        <a
+                          href={`https://basescan.org/tx/${tx.hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline font-mono text-xs flex items-center gap-1"
+                        >
+                          {tx.hash.substring(0, 10)}...{tx.hash.slice(-6)}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant="default" 
+                          className={tx.isError === "0" 
+                            ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" 
+                            : "bg-red-500/10 text-red-600 hover:bg-red-500/20"
+                          }
+                        >
+                          {tx.isError === "0" ? "Success" : "Failed"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <a
+                          href={`https://basescan.org/address/${tx.from}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline font-mono text-xs"
+                        >
+                          {tx.from.substring(0, 6)}...{tx.from.slice(-4)}
+                        </a>
+                      </TableCell>
+                      <TableCell>
+                        <a
+                          href={`https://basescan.org/address/${tx.to}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline font-mono text-xs"
+                        >
+                          {tx.to.substring(0, 6)}...{tx.to.slice(-4)}
+                        </a>
+                      </TableCell>
+                      <TableCell>
+                        {(parseInt(tx.value) / 1e18).toFixed(6)}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(parseInt(tx.timeStamp) * 1000), { addSuffix: true })}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              No recent Base bridge transactions found
             </div>
           )}
         </CardContent>
