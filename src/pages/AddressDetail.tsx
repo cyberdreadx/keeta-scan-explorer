@@ -55,17 +55,26 @@ const AddressDetail = () => {
               <CardTitle>Overview</CardTitle>
             </CardHeader>
             <CardContent>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Address</p>
-                <p className="font-mono text-sm break-all">{address}</p>
-              </div>
-
-              <div className="text-center py-12 mt-6">
-                <Wallet className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-                <p className="text-lg font-semibold text-foreground mb-2">Coming Soon</p>
-                <p className="text-sm text-muted-foreground">
-                  Address details and transactions will be displayed here once connected to the network.
-                </p>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Address</p>
+                  <p className="font-mono text-sm break-all">{address}</p>
+                </div>
+                
+                {isLoading ? (
+                  <div className="py-4">
+                    <p className="text-sm text-muted-foreground">Loading account info...</p>
+                  </div>
+                ) : accountData ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Total Transactions</p>
+                    <p className="text-2xl font-bold">{accountData.totalTransactions || 0}</p>
+                  </div>
+                ) : (
+                  <div className="py-4">
+                    <p className="text-sm text-muted-foreground">No account data available</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
