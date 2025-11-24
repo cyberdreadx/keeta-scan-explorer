@@ -1,14 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { useAccountInfo } from "@/hooks/useKeetaData";
 import { useBaseTransactions } from "@/hooks/useBaseTransactions";
-import { Anchor, ExternalLink } from "lucide-react";
+import { Anchor, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatKeetaAmount } from "@/lib/keetaOperations";
 import { getTokenMetadata } from "@/lib/tokenMetadata";
 import { formatDistanceToNow } from "date-fns";
 import { BASE_ANCHOR_ADDRESS } from "@/lib/addressLabels";
+import { useState } from "react";
 
 const BASE_EVM_ADDRESS = "0x1c24a0fb7bcf2154a9d37b7b3aa443bc63fcc698";
 
@@ -19,12 +21,31 @@ const SUPPORTED_ASSETS = [
   "keeta_apyez4az5r6shtblf3qtzirmikq3tghb5svrmmrltdkxgnnzzhlstby3cuscc", // CBBTC
 ];
 
+const ITEMS_PER_PAGE = 10;
+
 const BaseAnchor = () => {
   const { data: accountInfo, isLoading: isLoadingKeeta } = useAccountInfo(BASE_ANCHOR_ADDRESS);
   const { data: baseTransactions = [], isLoading: isLoadingBase } = useBaseTransactions(BASE_EVM_ADDRESS);
+  
+  const [keetaPage, setKeetaPage] = useState(1);
+  const [basePage, setBasePage] = useState(1);
 
   // Get transaction history from account info
   const keetaBridgeTransactions = accountInfo?.transactions || [];
+  
+  // Pagination calculations
+  const keetaTotalPages = Math.ceil(keetaBridgeTransactions.length / ITEMS_PER_PAGE);
+  const baseTotalPages = Math.ceil(baseTransactions.length / ITEMS_PER_PAGE);
+  
+  const paginatedKeetaTxs = keetaBridgeTransactions.slice(
+    (keetaPage - 1) * ITEMS_PER_PAGE,
+    keetaPage * ITEMS_PER_PAGE
+  );
+  
+  const paginatedBaseTxs = baseTransactions.slice(
+    (basePage - 1) * ITEMS_PER_PAGE,
+    basePage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="w-full max-w-[100vw] overflow-x-hidden p-6">
@@ -103,7 +124,12 @@ const BaseAnchor = () => {
       {/* Keeta Network Transactions */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Keeta Bridge Transactions</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Keeta Bridge Transactions</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              {keetaBridgeTransactions.length} total
+            </span>
+          </CardTitle>
           <p className="text-sm text-muted-foreground">
             Transactions on the Keeta network involving the Base Anchor
           </p>
@@ -114,18 +140,19 @@ const BaseAnchor = () => {
               Loading Keeta bridge transactions...
             </div>
           ) : keetaBridgeTransactions.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>From</TableHead>
-                    <TableHead>Created</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {keetaBridgeTransactions.map((block: any) => {
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>From</TableHead>
+                      <TableHead>Created</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedKeetaTxs.map((block: any) => {
                     const mainOp = block.operations?.[0];
                     const token = mainOp?.token;
                     const metadata = getTokenMetadata(token);
@@ -162,13 +189,42 @@ const BaseAnchor = () => {
                         </TableCell>
                       </TableRow>
                     );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {keetaTotalPages > 1 && (
+                <div className="flex items-center justify-between mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Page {keetaPage} of {keetaTotalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setKeetaPage(p => Math.max(1, p - 1))}
+                      disabled={keetaPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setKeetaPage(p => Math.min(keetaTotalPages, p + 1))}
+                      disabled={keetaPage === keetaTotalPages}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              No recent Keeta bridge transactions found
+              No Keeta bridge transactions found
             </div>
           )}
         </CardContent>
@@ -177,7 +233,12 @@ const BaseAnchor = () => {
       {/* Base Network Transactions */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Base Bridge Transactions</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Base Bridge Transactions</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              {baseTransactions.length} total
+            </span>
+          </CardTitle>
           <p className="text-sm text-muted-foreground">
             Transactions on the Base EVM network involving the Base Anchor
           </p>
@@ -188,20 +249,21 @@ const BaseAnchor = () => {
               Loading Base transactions...
             </div>
           ) : baseTransactions.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tx Hash</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>From</TableHead>
-                    <TableHead>To</TableHead>
-                    <TableHead>Value (ETH)</TableHead>
-                    <TableHead>Age</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {baseTransactions.slice(0, 10).map((tx: any) => (
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tx Hash</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>From</TableHead>
+                      <TableHead>To</TableHead>
+                      <TableHead>Value (ETH)</TableHead>
+                      <TableHead>Age</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedBaseTxs.map((tx: any) => (
                     <TableRow key={tx.hash}>
                       <TableCell>
                         <a
@@ -252,13 +314,42 @@ const BaseAnchor = () => {
                         {formatDistanceToNow(new Date(parseInt(tx.timeStamp) * 1000), { addSuffix: true })}
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {baseTotalPages > 1 && (
+                <div className="flex items-center justify-between mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Page {basePage} of {baseTotalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBasePage(p => Math.max(1, p - 1))}
+                      disabled={basePage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBasePage(p => Math.min(baseTotalPages, p + 1))}
+                      disabled={basePage === baseTotalPages}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              No recent Base bridge transactions found
+              No Base bridge transactions found
             </div>
           )}
         </CardContent>
