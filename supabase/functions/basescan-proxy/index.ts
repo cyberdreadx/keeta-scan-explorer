@@ -11,9 +11,23 @@ serve(async (req) => {
   }
 
   try {
-    const { address } = await req.json();
+    let address: string;
+    
+    // Try to get address from request body
+    try {
+      const body = await req.json();
+      address = body.address;
+      console.log('Received address from body:', address);
+    } catch (e) {
+      console.error('Error parsing request body:', e);
+      return new Response(
+        JSON.stringify({ error: 'Invalid request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     if (!address) {
+      console.error('No address provided in request');
       return new Response(
         JSON.stringify({ error: 'Address parameter is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -22,10 +36,14 @@ serve(async (req) => {
 
     // Using Basescan API to fetch transactions for the Base network
     const apiKey = Deno.env.get('BASESCAN_API_KEY');
+    console.log('Fetching transactions for address:', address);
+    
     const basescanUrl = `https://api.basescan.org/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&page=1&offset=20&apikey=${apiKey}`;
     
     const response = await fetch(basescanUrl);
     const data = await response.json();
+    
+    console.log('Basescan response status:', data.status, 'message:', data.message);
 
     return new Response(
       JSON.stringify(data),
