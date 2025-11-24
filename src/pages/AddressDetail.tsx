@@ -144,19 +144,69 @@ const AddressDetail = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Hash</TableHead>
+                        <TableHead>Block</TableHead>
+                        <TableHead>Age</TableHead>
                         <TableHead>Type</TableHead>
+                        <TableHead>From</TableHead>
+                        <TableHead>To</TableHead>
                         <TableHead>Amount</TableHead>
-                        <TableHead>Time</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {accountData.transactions.map((tx: any) => {
-                        const mainOp = tx.operations?.[0];
-                        const opType = getOperationType(mainOp?.type || 0);
-                        const token = mainOp?.token;
-                        const metadata = getTokenMetadata(token);
-                        const amount = mainOp?.amount ? formatKeetaAmount(mainOp.amount, token) : "0";
+                        // Determine if this is a swap (has both Send and Conditional Receive)
+                        const operations = tx.operations || [];
+                        const hasSend = operations.some((op: any) => op.type === 0);
+                        const hasConditionalReceive = operations.some((op: any) => op.type === 7);
+                        const isSwap = hasSend && hasConditionalReceive;
+                        
+                        let transactionType = 'SEND';
+                        let fromAddress = tx.account;
+                        let toAddress = '';
+                        let displayAmount = '';
+                        
+                        if (isSwap) {
+                          // SWAP transaction
+                          transactionType = 'SWAP';
+                          const sendOp = operations.find((op: any) => op.type === 0);
+                          const receiveOp = operations.find((op: any) => op.type === 7);
+                          
+                          if (sendOp && receiveOp) {
+                            const sendToken = sendOp.token || 'keeta_ansab4br7emzyatxqymuzva7zub6b3fawwqhmxwjygnvpyqqqrxhcsle2upqw';
+                            const receiveToken = receiveOp.token || 'keeta_ansab4br7emzyatxqymuzva7zub6b3fawwqhmxwjygnvpyqqqrxhcsle2upqw';
+                            const sendMetadata = getTokenMetadata(sendToken);
+                            const receiveMetadata = getTokenMetadata(receiveToken);
+                            const sendAmount = formatKeetaAmount(sendOp.amount || '0x0', sendToken);
+                            const receiveAmount = formatKeetaAmount(receiveOp.amount || '0x0', receiveToken);
+                            
+                            fromAddress = tx.account;
+                            toAddress = receiveOp.from || sendOp.to || '';
+                            displayAmount = `${sendAmount} ${sendMetadata?.symbol || 'KTA'} ⇄ ${receiveAmount} ${receiveMetadata?.symbol || 'MURF'}`;
+                          }
+                        } else if (tx.account === address) {
+                          // Transaction FROM this address
+                          transactionType = 'SEND';
+                          const sendOp = operations.find((op: any) => op.type === 0);
+                          if (sendOp) {
+                            toAddress = sendOp.to;
+                            const token = sendOp.token || 'keeta_ansab4br7emzyatxqymuzva7zub6b3fawwqhmxwjygnvpyqqqrxhcsle2upqw';
+                            const metadata = getTokenMetadata(token);
+                            const amount = formatKeetaAmount(sendOp.amount || '0x0', token);
+                            displayAmount = `${amount} ${metadata?.symbol || 'KTA'}`;
+                          }
+                        } else {
+                          // Transaction TO this address
+                          transactionType = 'RECEIVE';
+                          const receiveOp = operations.find((op: any) => op.to === address || op.type === 1);
+                          if (receiveOp) {
+                            fromAddress = tx.account;
+                            toAddress = address || '';
+                            const token = receiveOp.token || 'keeta_ansab4br7emzyatxqymuzva7zub6b3fawwqhmxwjygnvpyqqqrxhcsle2upqw';
+                            const metadata = getTokenMetadata(token);
+                            const amount = formatKeetaAmount(receiveOp.amount || '0x0', token);
+                            displayAmount = `${amount} ${metadata?.symbol || 'KTA'}`;
+                          }
+                        }
                         
                         return (
                           <TableRow key={tx.$hash || tx.hash}>
@@ -169,23 +219,34 @@ const AddressDetail = () => {
                                 <ExternalLink className="h-3 w-3" />
                               </Link>
                             </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {formatTimestamp(tx.date)}
+                            </TableCell>
                             <TableCell>
                               <Badge variant="outline" className="text-xs">
-                                {opType.name}
+                                {transactionType}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <div className="flex items-center gap-2">
-                                {metadata?.imageUrl && (
-                                  <img src={metadata.imageUrl} alt={metadata.symbol} className="h-5 w-5 rounded-full" />
-                                )}
-                                <span className="font-semibold">
-                                  {amount} {metadata?.symbol || 'KTA'}
-                                </span>
-                              </div>
+                              <Link
+                                to={`/address/${fromAddress}`}
+                                className="text-primary hover:underline font-mono text-xs"
+                              >
+                                {shortenHash(fromAddress)}
+                              </Link>
                             </TableCell>
-                            <TableCell className="text-xs text-muted-foreground">
-                              {formatTimestamp(tx.date)}
+                            <TableCell>
+                              {toAddress && (
+                                <Link
+                                  to={`/address/${toAddress}`}
+                                  className="text-primary hover:underline font-mono text-xs"
+                                >
+                                  {shortenHash(toAddress)}
+                                </Link>
+                              )}
+                            </TableCell>
+                            <TableCell className="font-semibold">
+                              {displayAmount}
                             </TableCell>
                           </TableRow>
                         );
