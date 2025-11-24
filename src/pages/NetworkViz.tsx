@@ -276,7 +276,7 @@ const NetworkViz = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-950/50 to-cyan-950/30 border-cyan-500/30 backdrop-blur-sm">
+          <Card className="bg-gradient-to-br from-blue-950/20 to-cyan-950/10 border-cyan-500/30 backdrop-blur-xl shadow-2xl shadow-cyan-500/10">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-cyan-400/80 text-sm uppercase tracking-wider">Network Nodes</span>
@@ -296,7 +296,7 @@ const NetworkViz = () => {
             </div>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-950/50 to-pink-950/30 border-purple-500/30 backdrop-blur-sm">
+          <Card className="bg-gradient-to-br from-purple-950/20 to-pink-950/10 border-purple-500/30 backdrop-blur-xl shadow-2xl shadow-purple-500/10">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-purple-400/80 text-sm uppercase tracking-wider">Total Blocks</span>
@@ -313,7 +313,7 @@ const NetworkViz = () => {
             </div>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-950/50 to-emerald-950/30 border-green-500/30 backdrop-blur-sm">
+          <Card className="bg-gradient-to-br from-green-950/20 to-emerald-950/10 border-green-500/30 backdrop-blur-xl shadow-2xl shadow-green-500/10">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-green-400/80 text-sm uppercase tracking-wider">Data Packets</span>
@@ -332,7 +332,7 @@ const NetworkViz = () => {
         </div>
 
         {/* Live Transaction Stream */}
-        <Card className="bg-black/40 border-cyan-500/30 backdrop-blur-sm">
+        <Card className="bg-black/20 border-cyan-500/30 backdrop-blur-xl shadow-2xl shadow-cyan-500/10">
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
               <Activity className="h-6 w-6 text-cyan-400" />
