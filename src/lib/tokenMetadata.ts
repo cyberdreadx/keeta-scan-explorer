@@ -19,6 +19,33 @@ export const TOKEN_METADATA: TokenMetadata[] = [
     "updatedAt": 1735689600000
   },
   {
+    "address": "keeta_amnkge74xitii5dsobstldatv3irmyimujfjotftx7plaaaseam4bntb7wnna",
+    "name": "USD Coin",
+    "symbol": "USDC",
+    "decimals": 6,
+    "description": "Bridged USDC on Keeta",
+    "imageUrl": "https://cryptologos.cc/logos/usd-coin-usdc-logo.png",
+    "updatedAt": 1735689600000
+  },
+  {
+    "address": "keeta_apblhar4ncp3ln62wrygsn73pt3houuvj7ic47aarnolpcu67oqn4xqcji3au",
+    "name": "Euro Coin",
+    "symbol": "EURC",
+    "decimals": 6,
+    "description": "Bridged EURC on Keeta",
+    "imageUrl": "https://cryptologos.cc/logos/euro-coin-eurc-logo.png",
+    "updatedAt": 1735689600000
+  },
+  {
+    "address": "keeta_apyez4az5r6shtblf3qtzirmikq3tghb5svrmmrltdkxgnnzzhlstby3cuscc",
+    "name": "Coinbase Wrapped BTC",
+    "symbol": "CBBTC",
+    "decimals": 8,
+    "description": "Bridged Coinbase Wrapped BTC on Keeta",
+    "imageUrl": "https://assets.coingecko.com/coins/images/40056/standard/cbBTC_Logo.png",
+    "updatedAt": 1735689600000
+  },
+  {
     "address": "keeta_ao7nitutebhm2pkrfbtniepivaw324hecyb43wsxts5rrhi2p5ckgof37racm",
     "name": "Murphy",
     "symbol": "MURF",
