@@ -3,8 +3,12 @@ import { formatDistanceToNow } from "date-fns";
 import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, ArrowRightLeft } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Wallet, ArrowRightLeft, ExternalLink } from "lucide-react";
 import { useAccountInfo } from "@/hooks/useKeetaData";
+import { getOperationType } from "@/lib/keetaOperations";
+import { formatKeetaAmount } from "@/lib/keetaOperations";
+import { getTokenMetadata } from "@/lib/tokenMetadata";
 
 const AddressDetail = () => {
   const { address } = useParams();
@@ -70,13 +74,73 @@ const AddressDetail = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ArrowRightLeft className="h-5 w-5 text-accent" />
-                Transactions
+                Transaction History
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Transaction history coming soon</p>
-              </div>
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Loading transactions...</p>
+                </div>
+              ) : accountData?.transactions && accountData.transactions.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Hash</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Time</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {accountData.transactions.map((tx: any) => {
+                        const mainOp = tx.operations?.[0];
+                        const opType = getOperationType(mainOp?.type || 0);
+                        const token = mainOp?.token;
+                        const metadata = getTokenMetadata(token);
+                        const amount = mainOp?.amount ? formatKeetaAmount(mainOp.amount, token) : "0";
+                        
+                        return (
+                          <TableRow key={tx.$hash || tx.hash}>
+                            <TableCell>
+                              <Link
+                                to={`/transaction/${tx.$hash || tx.hash}`}
+                                className="text-primary hover:underline font-mono text-xs flex items-center gap-1"
+                              >
+                                {shortenHash(tx.$hash || tx.hash)}
+                                <ExternalLink className="h-3 w-3" />
+                              </Link>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">
+                                {opType.name}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {metadata?.imageUrl && (
+                                  <img src={metadata.imageUrl} alt={metadata.symbol} className="h-5 w-5 rounded-full" />
+                                )}
+                                <span className="font-semibold">
+                                  {amount} {metadata?.symbol || 'KTA'}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {formatTimestamp(tx.date)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No transactions found</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
