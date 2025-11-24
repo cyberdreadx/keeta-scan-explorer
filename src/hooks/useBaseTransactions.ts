@@ -14,31 +14,32 @@ export interface BaseTransaction {
 }
 
 const fetchBaseTransactions = async (address: string): Promise<BaseTransaction[]> => {
-  const { data, error } = await supabase.functions.invoke('basescan-proxy', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ address }),
-  });
+  try {
+    const { data, error } = await supabase.functions.invoke('basescan-proxy', {
+      body: { address },
+    });
 
-  if (error) {
-    console.error('Error fetching Base transactions:', error);
+    if (error) {
+      console.error('Error fetching Base transactions:', error);
+      return [];
+    }
+
+    if (data?.result && Array.isArray(data.result)) {
+      return data.result;
+    }
+
+    return [];
+  } catch (err) {
+    console.error('Exception fetching Base transactions:', err);
     return [];
   }
-
-  if (data?.result && Array.isArray(data.result)) {
-    return data.result;
-  }
-
-  return [];
 };
 
 export const useBaseTransactions = (address: string) => {
   return useQuery({
     queryKey: ['base-transactions', address],
     queryFn: () => fetchBaseTransactions(address),
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000,
     enabled: !!address,
   });
 };
