@@ -15,7 +15,7 @@ export const TOKEN_METADATA: TokenMetadata[] = [
     "symbol": "KTA",
     "decimals": 18,
     "description": "Native Keeta Token",
-    "imageUrl": "",
+    "imageUrl": "https://assets.coingecko.com/coins/images/54723/standard/2025-03-05_22.53.06.jpg?1741234207",
     "updatedAt": 1735689600000
   },
   {
@@ -33,7 +33,7 @@ export const TOKEN_METADATA: TokenMetadata[] = [
     "symbol": "EURC",
     "decimals": 6,
     "description": "Bridged EURC on Keeta",
-    "imageUrl": "https://cryptologos.cc/logos/euro-coin-eurc-logo.png",
+    "imageUrl": "https://assets.coingecko.com/coins/images/26045/large/euro.png?1696525125",
     "updatedAt": 1735689600000
   },
   {
@@ -42,7 +42,7 @@ export const TOKEN_METADATA: TokenMetadata[] = [
     "symbol": "CBBTC",
     "decimals": 8,
     "description": "Bridged Coinbase Wrapped BTC on Keeta",
-    "imageUrl": "https://assets.coingecko.com/coins/images/40056/standard/cbBTC_Logo.png",
+    "imageUrl": "https://cryptologos.cc/logos/bitcoin-btc-logo.png",
     "updatedAt": 1735689600000
   },
   {
