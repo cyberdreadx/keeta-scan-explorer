@@ -185,8 +185,17 @@ export const keetaService = {
         block.operations?.some((op: any) => op.to === address)
       );
       
-      // Extract balances from account info
-      const balances = accountInfo.balances || {};
+      // Convert balances array to object for easier lookup
+      const balancesArray = accountInfo.balances || [];
+      const balances: Record<string, string> = {};
+      balancesArray.forEach((b: any) => {
+        if (b.token && b.balance) {
+          balances[b.token] = b.balance;
+        }
+      });
+      
+      console.log('📊 Account balances:', balances);
+      console.log('📋 Transactions found:', addressTransactions.length);
       
       return {
         address,
