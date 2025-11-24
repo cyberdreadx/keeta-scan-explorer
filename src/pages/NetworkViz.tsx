@@ -6,27 +6,89 @@ import { Badge } from "@/components/ui/badge";
 import { Activity, Zap, Radio } from "lucide-react";
 import { formatKeetaAddress, formatKeetaAmount } from "@/lib/keetaOperations";
 
+interface Node {
+  x: number;
+  y: number;
+  id: string;
+  index: number;
+}
+
+interface Pulse {
+  fromNode: number;
+  toNode: number;
+  progress: number;
+  speed: number;
+  color: string;
+}
+
 const NetworkViz = () => {
   const { data: networkStats } = useNetworkStats();
   const { data: recentBlocks = [] } = useRecentBlocks();
   const { data: recentTransactions = [] } = useRecentTransactions();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [particles, setParticles] = useState<Array<{ x: number; y: number; vx: number; vy: number; size: number }>>([]);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [pulses, setPulses] = useState<Pulse[]>([]);
+  const pulsesRef = useRef<Pulse[]>([]);
+  const animationRef = useRef<number>();
 
-  // Initialize particles
+  // Initialize nodes in a circle pattern
   useEffect(() => {
-    const particleCount = 100;
-    const newParticles = Array.from({ length: particleCount }, () => ({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5,
-      size: Math.random() * 2 + 1,
-    }));
-    setParticles(newParticles);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const updateNodes = () => {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = Math.min(canvas.width, canvas.height) * 0.35;
+      const nodeCount = 4; // 4 representatives
+
+      const newNodes = Array.from({ length: nodeCount }, (_, i) => {
+        const angle = (i / nodeCount) * Math.PI * 2 - Math.PI / 2;
+        return {
+          x: centerX + Math.cos(angle) * radius,
+          y: centerY + Math.sin(angle) * radius,
+          id: `node-${i}`,
+          index: i,
+        };
+      });
+      setNodes(newNodes);
+    };
+
+    updateNodes();
+
+    const handleResize = () => {
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        updateNodes();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Animate particles
+  // Add pulses when new transactions arrive
+  useEffect(() => {
+    if (recentTransactions.length > 0 && nodes.length > 0) {
+      const fromNode = Math.floor(Math.random() * nodes.length);
+      const toNode = (fromNode + 1 + Math.floor(Math.random() * (nodes.length - 1))) % nodes.length;
+      
+      const colors = ['#22d3ee', '#a855f7', '#10b981', '#f59e0b', '#ef4444'];
+      const newPulse: Pulse = {
+        fromNode,
+        toNode,
+        progress: 0,
+        speed: 0.01 + Math.random() * 0.02,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      };
+      
+      pulsesRef.current = [...pulsesRef.current, newPulse];
+      setPulses(pulsesRef.current);
+    }
+  }, [recentTransactions.length, nodes.length]);
+
+  // Animate the network
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -39,63 +101,146 @@ const NetworkViz = () => {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Update and draw particles
-      particles.forEach((particle, index) => {
-        particle.x += particle.vx;
-        particle.y += particle.vy;
 
-        // Wrap around edges
-        if (particle.x < 0) particle.x = canvas.width;
-        if (particle.x > canvas.width) particle.x = 0;
-        if (particle.y < 0) particle.y = canvas.height;
-        if (particle.y > canvas.height) particle.y = 0;
+      if (nodes.length === 0) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
 
-        // Draw particle
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(59, 130, 246, ${0.3 + Math.random() * 0.3})`;
-        ctx.fill();
+      // Draw wires between all nodes
+      nodes.forEach((node, i) => {
+        nodes.forEach((otherNode, j) => {
+          if (i >= j) return;
 
-        // Draw connections
-        particles.forEach((otherParticle, otherIndex) => {
-          if (otherIndex <= index) return;
-          
-          const dx = particle.x - otherParticle.x;
-          const dy = particle.y - otherParticle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
+          // Draw wire
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(otherNode.x, otherNode.y);
+          ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
 
-          if (distance < 100) {
-            ctx.beginPath();
-            ctx.moveTo(particle.x, particle.y);
-            ctx.lineTo(otherParticle.x, otherParticle.y);
-            ctx.strokeStyle = `rgba(59, 130, 246, ${0.15 * (1 - distance / 100)})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
+          // Draw glowing core
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(otherNode.x, otherNode.y);
+          ctx.strokeStyle = 'rgba(34, 211, 238, 0.3)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
         });
       });
 
-      requestAnimationFrame(animate);
+      // Update and draw pulses
+      pulsesRef.current = pulsesRef.current.filter(pulse => {
+        pulse.progress += pulse.speed;
+        
+        if (pulse.progress >= 1) {
+          return false; // Remove completed pulses
+        }
+
+        const fromNode = nodes[pulse.fromNode];
+        const toNode = nodes[pulse.toNode];
+        
+        if (!fromNode || !toNode) return false;
+
+        const x = fromNode.x + (toNode.x - fromNode.x) * pulse.progress;
+        const y = fromNode.y + (toNode.y - fromNode.y) * pulse.progress;
+
+        // Draw pulse glow
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, 15);
+        gradient.addColorStop(0, pulse.color);
+        gradient.addColorStop(0.5, pulse.color.replace(')', ', 0.5)').replace('rgb', 'rgba'));
+        gradient.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, 15, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw pulse core
+        ctx.fillStyle = pulse.color;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw trail
+        const trailLength = 30;
+        for (let i = 1; i <= trailLength; i++) {
+          const trailProgress = Math.max(0, pulse.progress - (i * 0.01));
+          const trailX = fromNode.x + (toNode.x - fromNode.x) * trailProgress;
+          const trailY = fromNode.y + (toNode.y - fromNode.y) * trailProgress;
+          const opacity = 1 - (i / trailLength);
+          
+          ctx.fillStyle = pulse.color.replace(')', `, ${opacity * 0.5})`).replace('rgb', 'rgba');
+          ctx.beginPath();
+          ctx.arc(trailX, trailY, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        return true;
+      });
+
+      setPulses(pulsesRef.current);
+
+      // Draw nodes
+      nodes.forEach((node, i) => {
+        // Node outer glow
+        const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, 30);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+        gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.2)');
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 30, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Node ring
+        ctx.strokeStyle = 'rgba(34, 211, 238, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 20, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Node inner ring (animated)
+        const pulsePhase = (Date.now() / 1000 + i * 0.5) % 1;
+        const pulseSize = 15 + pulsePhase * 5;
+        ctx.strokeStyle = `rgba(34, 211, 238, ${0.8 - pulsePhase * 0.6})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, pulseSize, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Node core
+        ctx.fillStyle = '#3b82f6';
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Node center dot
+        ctx.fillStyle = '#22d3ee';
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
     };
 
     animate();
 
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
     };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [particles]);
+  }, [nodes]);
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Animated background */}
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 pointer-events-none opacity-40"
+        className="fixed inset-0 pointer-events-none"
       />
       
       {/* Gradient overlays */}
@@ -114,15 +259,15 @@ const NetworkViz = () => {
             </h1>
             <Radio className="h-12 w-12 text-blue-400 animate-pulse" />
           </div>
-          <p className="text-cyan-400/80 text-lg">Real-time Keeta Network Activity Monitor</p>
+          <p className="text-cyan-400/80 text-lg">Real-time Data Flow Visualization</p>
           <div className="mt-4 flex justify-center gap-2">
             <Badge className="bg-green-500/20 text-green-400 border-green-500/50 animate-pulse">
               <span className="inline-block h-2 w-2 rounded-full bg-green-400 mr-2" />
-              ONLINE
+              LIVE
             </Badge>
             <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/50">
               <Activity className="h-3 w-3 mr-1" />
-              {recentTransactions.length} Active Streams
+              {pulses.length} Active Transmissions
             </Badge>
           </div>
         </div>
@@ -132,18 +277,18 @@ const NetworkViz = () => {
           <Card className="bg-gradient-to-br from-blue-950/50 to-cyan-950/30 border-cyan-500/30 backdrop-blur-sm">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-cyan-400/80 text-sm uppercase tracking-wider">Network Status</span>
+                <span className="text-cyan-400/80 text-sm uppercase tracking-wider">Network Nodes</span>
                 <Zap className="h-5 w-5 text-yellow-400 animate-pulse" />
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">Active Nodes</span>
+                  <span className="text-gray-400 text-sm">Active</span>
                   <span className="text-2xl font-bold text-cyan-400">
                     {networkStats?.activeRepresentatives || 0}
                   </span>
                 </div>
                 <div className="h-2 bg-black/50 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-pulse" style={{ width: '85%' }} />
+                  <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-pulse" style={{ width: '100%' }} />
                 </div>
               </div>
             </div>
@@ -160,7 +305,7 @@ const NetworkViz = () => {
                   {networkStats?.nodeStats?.ledger?.blockCount?.toLocaleString() || 0}
                 </div>
                 <div className="text-xs text-gray-400">
-                  Processing at {recentBlocks.length} blocks/sec
+                  {recentBlocks.length} recent blocks
                 </div>
               </div>
             </div>
@@ -169,7 +314,7 @@ const NetworkViz = () => {
           <Card className="bg-gradient-to-br from-green-950/50 to-emerald-950/30 border-green-500/30 backdrop-blur-sm">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-green-400/80 text-sm uppercase tracking-wider">Transactions</span>
+                <span className="text-green-400/80 text-sm uppercase tracking-wider">Data Packets</span>
                 <Radio className="h-5 w-5 text-green-400 animate-pulse" />
               </div>
               <div className="space-y-3">
@@ -177,7 +322,7 @@ const NetworkViz = () => {
                   {networkStats?.nodeStats?.ledger?.transactionCount?.toLocaleString() || 0}
                 </div>
                 <div className="text-xs text-gray-400">
-                  {recentTransactions.length} in latest batch
+                  {recentTransactions.length} streaming now
                 </div>
               </div>
             </div>
@@ -185,20 +330,20 @@ const NetworkViz = () => {
         </div>
 
         {/* Live Transaction Stream */}
-        <Card className="bg-black/40 border-cyan-500/30 backdrop-blur-sm mb-8">
+        <Card className="bg-black/40 border-cyan-500/30 backdrop-blur-sm">
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
               <Activity className="h-6 w-6 text-cyan-400" />
-              <h2 className="text-2xl font-bold text-cyan-400">Live Transaction Stream</h2>
+              <h2 className="text-2xl font-bold text-cyan-400">Live Data Stream</h2>
               <div className="ml-auto">
                 <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/50 animate-pulse">
-                  STREAMING
+                  TRANSMITTING
                 </Badge>
               </div>
             </div>
             
-            <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar">
-              {recentTransactions.slice(0, 10).map((tx: any, index: number) => {
+            <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
+              {recentTransactions.slice(0, 8).map((tx: any, index: number) => {
                 const hash = tx.$hash || tx.hash || "N/A";
                 const amount = tx.operations?.[0]?.amount;
                 
@@ -208,7 +353,6 @@ const NetworkViz = () => {
                     className="group relative p-4 rounded-lg bg-gradient-to-r from-blue-950/30 to-transparent border border-blue-500/20 hover:border-cyan-500/50 transition-all duration-300 animate-fade-in"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    {/* Glowing effect */}
                     <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
                     
                     <div className="relative flex items-center justify-between">
@@ -242,45 +386,10 @@ const NetworkViz = () => {
                       )}
                     </div>
                     
-                    {/* Progress bar animation */}
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50 group-hover:opacity-100 transition-opacity" />
                   </div>
                 );
               })}
-            </div>
-          </div>
-        </Card>
-
-        {/* Network Topology Visualization */}
-        <Card className="bg-black/40 border-purple-500/30 backdrop-blur-sm">
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <Radio className="h-6 w-6 text-purple-400" />
-              <h2 className="text-2xl font-bold text-purple-400">Network Topology</h2>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {networkStats?.representatives?.map((rep: any, index: number) => (
-                <div
-                  key={rep.representative}
-                  className="relative p-4 rounded-lg bg-gradient-to-br from-purple-950/30 to-transparent border border-purple-500/20 hover:border-purple-500/50 transition-all duration-300"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/30 flex items-center justify-center animate-pulse">
-                      <Radio className="h-6 w-6 text-purple-400" />
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs font-mono text-purple-400">
-                        Node {index + 1}
-                      </div>
-                      <Badge variant="outline" className="border-purple-500/50 text-purple-400 text-xs mt-1">
-                        ACTIVE
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </Card>
