@@ -115,18 +115,31 @@ export function formatKeetaAddress(address: string, length: number = 10): string
 
 export function formatKeetaAmount(hexAmount: string, tokenAddress?: string): string {
   try {
+    const amount = BigInt(hexAmount);
+    // Use token-specific decimals or default to 18
     const decimals = tokenAddress ? getTokenDecimals(tokenAddress) : 18;
-    const amount = parseInt(hexAmount, 16) / Math.pow(10, decimals);
-    // Format with appropriate decimals based on size
-    if (amount >= 1000000) {
-      return (amount / 1000000).toFixed(2) + 'M';
-    } else if (amount >= 1000) {
-      return (amount / 1000).toFixed(2) + 'K';
-    } else if (amount >= 1) {
-      return amount.toFixed(3);
-    } else {
-      return amount.toFixed(6);
+    const divisor = BigInt(10) ** BigInt(decimals);
+    const wholePart = amount / divisor;
+    const fractionalPart = amount % divisor;
+
+    if (fractionalPart === 0n) {
+      return wholePart.toString();
     }
+
+    const fractionalStr = fractionalPart.toString().padStart(decimals, '0');
+    // Remove trailing zeros
+    const trimmed = fractionalStr.replace(/0+$/, '');
+    const result = trimmed ? `${wholePart}.${trimmed}` : wholePart.toString();
+    
+    // Format large numbers
+    const numValue = parseFloat(result);
+    if (numValue >= 1000000) {
+      return (numValue / 1000000).toFixed(2) + 'M';
+    } else if (numValue >= 1000) {
+      return (numValue / 1000).toFixed(2) + 'K';
+    }
+    
+    return result;
   } catch {
     return '0';
   }

@@ -153,6 +153,44 @@ export const keetaService = {
     }
   },
 
+  // Fetch token metadata including name and decimals from the network
+  async getTokenMetadata(tokenAddress: string) {
+    try {
+      const representatives = await this.getRepresentatives();
+      const rep = representatives.find(r => r.weight !== "0x0") || representatives[0];
+      
+      const response = await fetch(
+        `${rep.endpoints.api}/node/ledger/account/${tokenAddress}`
+      );
+      const data = await response.json();
+      
+      let decimals = 18; // Default to 18 decimals
+      const name = data.info?.name || null;
+      
+      // Try to get decimals from metadata
+      if (data.info?.metadata) {
+        try {
+          const metadataBuffer = Buffer.from(data.info.metadata, 'base64');
+          const metadata = JSON.parse(metadataBuffer.toString());
+          if (metadata.decimalPlaces !== undefined) {
+            decimals = metadata.decimalPlaces;
+          }
+        } catch (e) {
+          console.warn('Could not parse token metadata:', e);
+        }
+      }
+      
+      return {
+        address: tokenAddress,
+        name,
+        decimals,
+      };
+    } catch (error) {
+      console.error('❌ Error fetching token metadata:', error);
+      return null;
+    }
+  },
+
   // Get account info with full transaction history and balances
   async getAccountInfo(address: string) {
     try {
