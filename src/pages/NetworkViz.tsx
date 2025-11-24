@@ -240,14 +240,16 @@ const NetworkViz = () => {
       {/* Animated background */}
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 pointer-events-none"
+        className="fixed inset-0 pointer-events-none z-0"
       />
       
       {/* Gradient overlays */}
-      <div className="fixed inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-cyan-950/20 pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-cyan-950/20 pointer-events-none z-0" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none z-0" />
 
-      <Header />
+      <div className="relative z-50">
+        <Header />
+      </div>
 
       <div className="relative z-10 container mx-auto px-4 py-8">
         {/* Title Section */}
