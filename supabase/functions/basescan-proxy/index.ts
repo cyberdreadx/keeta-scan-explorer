@@ -11,8 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const address = url.searchParams.get('address');
+    const { address } = await req.json();
 
     if (!address) {
       return new Response(
@@ -22,7 +21,8 @@ serve(async (req) => {
     }
 
     // Using Basescan API to fetch transactions for the Base network
-    const basescanUrl = `https://api.basescan.org/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&page=1&offset=20`;
+    const apiKey = Deno.env.get('BASESCAN_API_KEY');
+    const basescanUrl = `https://api.basescan.org/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&page=1&offset=20&apikey=${apiKey}`;
     
     const response = await fetch(basescanUrl);
     const data = await response.json();
