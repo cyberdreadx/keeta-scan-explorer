@@ -38,12 +38,34 @@ serve(async (req) => {
     const apiKey = Deno.env.get('BASESCAN_API_KEY');
     console.log('Fetching transactions for address:', address);
     
+    // Try V2 API first with proper Base chain ID
     const basescanUrl = `https://api.basescan.org/v2/api?chainid=8453&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&page=1&offset=20&apikey=${apiKey}`;
     
-    const response = await fetch(basescanUrl);
-    const data = await response.json();
+    console.log('Calling Basescan URL (API key present):', !!apiKey);
     
-    console.log('Basescan response status:', data.status, 'message:', data.message);
+    const response = await fetch(basescanUrl);
+    console.log('Response status:', response.status, 'Content-Type:', response.headers.get('content-type'));
+    
+    // Check if response is actually JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response received:', text.substring(0, 500));
+      return new Response(
+        JSON.stringify({ 
+          error: 'Basescan API returned non-JSON response',
+          status: response.status,
+          result: []
+        }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+    
+    const data = await response.json();
+    console.log('Basescan response status:', data.status, 'message:', data.message, 'result count:', data.result?.length || 0);
 
     return new Response(
       JSON.stringify(data),
