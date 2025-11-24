@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useRecentBlocks } from "@/hooks/useKeetaData";
+import { useAccountInfo } from "@/hooks/useKeetaData";
 import { useBaseTransactions } from "@/hooks/useBaseTransactions";
 import { Anchor, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -20,14 +20,11 @@ const SUPPORTED_ASSETS = [
 ];
 
 const BaseAnchor = () => {
-  const { data: recentBlocks = [] } = useRecentBlocks();
+  const { data: accountInfo, isLoading: isLoadingKeeta } = useAccountInfo(BASE_ANCHOR_ADDRESS);
   const { data: baseTransactions = [], isLoading: isLoadingBase } = useBaseTransactions(BASE_EVM_ADDRESS);
 
-  // Filter blocks that involve the base anchor account (Keeta side)
-  const keetaBridgeTransactions = recentBlocks.filter((block: any) => 
-    block.account === BASE_ANCHOR_ADDRESS || 
-    block.operations?.some((op: any) => op.to === BASE_ANCHOR_ADDRESS || op.from === BASE_ANCHOR_ADDRESS)
-  );
+  // Get transaction history from account info
+  const keetaBridgeTransactions = accountInfo?.transactions || [];
 
   return (
     <div className="w-full max-w-[100vw] overflow-x-hidden p-6">
@@ -112,7 +109,11 @@ const BaseAnchor = () => {
           </p>
         </CardHeader>
         <CardContent>
-          {keetaBridgeTransactions.length > 0 ? (
+          {isLoadingKeeta ? (
+            <div className="text-center py-12 text-muted-foreground">
+              Loading Keeta bridge transactions...
+            </div>
+          ) : keetaBridgeTransactions.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
