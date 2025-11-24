@@ -34,16 +34,15 @@ serve(async (req) => {
       );
     }
 
-    // Using Basescan API V2 to fetch transactions for the Base network
+    // Using Etherscan V2 API to fetch transactions for Base network (chainid 8453)
     const apiKey = Deno.env.get('BASESCAN_API_KEY');
     console.log('Fetching transactions for address:', address);
     
-    // Try V2 API first with proper Base chain ID
-    const basescanUrl = `https://api.basescan.org/v2/api?chainid=8453&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&page=1&offset=20&apikey=${apiKey}`;
+    const etherscanUrl = `https://api.etherscan.io/v2/api?chainid=8453&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&page=1&offset=20&apikey=${apiKey}`;
     
-    console.log('Calling Basescan URL (API key present):', !!apiKey);
+    console.log('Calling Etherscan V2 API (API key present):', !!apiKey);
     
-    const response = await fetch(basescanUrl);
+    const response = await fetch(etherscanUrl);
     console.log('Response status:', response.status, 'Content-Type:', response.headers.get('content-type'));
     
     // Check if response is actually JSON
@@ -53,7 +52,7 @@ serve(async (req) => {
       console.error('Non-JSON response received:', text.substring(0, 500));
       return new Response(
         JSON.stringify({ 
-          error: 'Basescan API returned non-JSON response',
+          error: 'API returned non-JSON response',
           status: response.status,
           result: []
         }),
@@ -65,7 +64,7 @@ serve(async (req) => {
     }
     
     const data = await response.json();
-    console.log('Basescan response status:', data.status, 'message:', data.message, 'result count:', data.result?.length || 0);
+    console.log('Etherscan response status:', data.status, 'message:', data.message, 'result count:', data.result?.length || 0);
 
     return new Response(
       JSON.stringify(data),
