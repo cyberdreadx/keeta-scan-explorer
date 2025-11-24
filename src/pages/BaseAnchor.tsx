@@ -7,8 +7,8 @@ import { Link } from "react-router-dom";
 import { formatKeetaAmount } from "@/lib/keetaOperations";
 import { getTokenMetadata } from "@/lib/tokenMetadata";
 import { formatDistanceToNow } from "date-fns";
+import { BASE_ANCHOR_ADDRESS } from "@/lib/addressLabels";
 
-const BASE_ANCHOR_ACCOUNT = "keeta_aqltdal4rshtky5iehd765y3mdjkcmku5d4ulo5fgonzqrxulwepnogq33mle";
 const BASE_EVM_ADDRESS = "0x1c24a0fb7bcf2154a9d37b7b3aa443bc63fcc698";
 
 const SUPPORTED_ASSETS = [
@@ -23,8 +23,8 @@ const BaseAnchor = () => {
 
   // Filter blocks that involve the base anchor account
   const bridgeTransactions = recentBlocks.filter((block: any) => 
-    block.account === BASE_ANCHOR_ACCOUNT || 
-    block.operations?.some((op: any) => op.to === BASE_ANCHOR_ACCOUNT || op.from === BASE_ANCHOR_ACCOUNT)
+    block.account === BASE_ANCHOR_ADDRESS || 
+    block.operations?.some((op: any) => op.to === BASE_ANCHOR_ADDRESS || op.from === BASE_ANCHOR_ADDRESS)
   );
 
   return (
@@ -53,10 +53,10 @@ const BaseAnchor = () => {
             <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
               <Badge variant="outline" className="shrink-0">Keeta</Badge>
               <Link 
-                to={`/address/${BASE_ANCHOR_ACCOUNT}`}
+                to={`/address/${BASE_ANCHOR_ADDRESS}`}
                 className="font-mono text-sm hover:text-primary transition-colors break-all"
               >
-                {BASE_ANCHOR_ACCOUNT}
+                {BASE_ANCHOR_ADDRESS}
               </Link>
             </div>
             <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
